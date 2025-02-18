@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => reject('Error!'), 1000);
+    });
+
+    promise
+        .then(result => {
+            console.log('This will not be called');
+        })
+        .catch(error => {
+            console.log('First catch:', error); // First catch: Error!
+            // return 'Handled Error'; // 捕获错误后返回新的值
+        })
+        .then(result => {
+            console.log('Second then:', result); // Second then: Handled Error
+        })
+        .catch(error => {
+            console.log('Second catch:', error); // 不会执行，因为没有其他错误发生
+        });
+
+</script>
+
+</html>
