@@ -5,7 +5,8 @@ import { reactive } from "./reactive";
 class RefIml{
     private _value:any;
     public dep:Set<ReactiveEffect>
-    public _rawvalue:any
+    public _rawvalue:any;
+    public __v_isRef:boolean= true
     constructor(value:any){
         this._rawvalue = value
         this._value = convert(value)
@@ -39,5 +40,12 @@ function tarckRefValue(target:RefIml){
 function convert(value:any){
     return  isObject(value) ? reactive(value) : value;
 }
-
+//判断是否是ref对象
+export function isRef(ref:any){
+    return !!ref.__v_isRef
+}
+//拿取ref（在不知道ref是不是响应式对象的时候用）的值
+export function unRef(ref:any){
+    return isRef(ref)?ref.value :ref
+}
 
