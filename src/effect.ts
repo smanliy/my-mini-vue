@@ -14,6 +14,7 @@ export class ReactiveEffect{
     }
     run(){
         let result;
+        // active控制是否需要收集依赖
         if(!this.active){
         result = this._fn()
         }else{
@@ -21,6 +22,7 @@ export class ReactiveEffect{
             activeEffect = this
             result = this._fn()
         }
+        // shouldTrack 是一个全局标志，控制是否收集依赖。在副作用函数执行结束后，设置 shouldTrack = false 是为了避免后续的代码（例如副作用函数外的代码）无意中触发依赖收集。如果不把它设置为 false，可能会导致后续的代码不必要地收集依赖，造成不必要的性能开销。
         shouldTrack = false
         return result;
 
@@ -98,6 +100,7 @@ export function triggerEffects(dep:Set<ReactiveEffect> |undefined){
 
 }
 export function effect<T extends Function>(fn:T,options:any = {}){
+    // scheduler 是在数据变化时触发的调度器，用来控制副作用函数何时执行。
     const scheduler = options.scheduler
     const _effect = new ReactiveEffect(fn,scheduler);
     //extend
