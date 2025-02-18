@@ -48,4 +48,19 @@ export function isRef(ref:any){
 export function unRef(ref:any){
     return isRef(ref)?ref.value :ref
 }
+//proxyRefs
+export function proxyRefs(objectsWithRefs:Record<string | symbol, any>){
+    return new Proxy(objectsWithRefs,{
+        get:(target,key)=>{
+            return unRef(Reflect.get(target,key))
+        },
+        set:(target,key,value)=>{
+            if(isRef(target[key]) && !isRef(value)){
+               return Reflect.get(target,key).value = value
+            }else{
+                return Reflect.set(target,key,value) 
+            }
+        }
+    })
+}
 

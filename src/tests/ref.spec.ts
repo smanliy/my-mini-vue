@@ -1,6 +1,6 @@
 import { effect } from "../effect";
 import { reactive } from "../reactive";
-import { isRef, ref, unRef } from "../ref";
+import { isRef, proxyRefs, ref, unRef } from "../ref";
 
 describe("ref", () => {
 
@@ -41,25 +41,29 @@ describe("ref", () => {
       a.value.count.count1 = 200;
       expect(dummy).toBe(200);
     });
+
+  //vue3——>template
+  // get ——> ref ——> return ref.value;
+  //get ——> ref ——> return ref
+  //相当于重写proxy拦截器
+    it("proxyRefs", () => {
+      const user = {
+        age: ref(10),
+        name: "xiaohong",
+      };
+      const proxyUser = proxyRefs(user);
+      expect(user.age.value).toBe(10);
+      expect(proxyUser.age).toBe(10);
+      expect(proxyUser.name).toBe("xiaohong");
   
-    // it("proxyRefs", () => {
-    //   const user = {
-    //     age: ref(10),
-    //     name: "xiaohong",
-    //   };
-    //   const proxyUser = proxyRefs(user);
-    //   expect(user.age.value).toBe(10);
-    //   expect(proxyUser.age).toBe(10);
-    //   expect(proxyUser.name).toBe("xiaohong");
+      (proxyUser as any).age = 20;
+      expect(proxyUser.age).toBe(20);
+      expect(user.age.value).toBe(20);
   
-    //   (proxyUser as any).age = 20;
-    //   expect(proxyUser.age).toBe(20);
-    //   expect(user.age.value).toBe(20);
-  
-    //   proxyUser.age = ref(10);
-    //   expect(proxyUser.age).toBe(10);
-    //   expect(user.age.value).toBe(10);
-    // });
+      proxyUser.age = ref(10);
+      expect(proxyUser.age).toBe(10);
+      expect(user.age.value).toBe(10);
+    });
   
     it("isRef", () => {
       const a = ref(1);
