@@ -26,18 +26,20 @@ describe("ref", () => {
       expect(dummy).toBe(2);
     });
   
-    // it("should make nested properties reactive", () => {
-    //   const a = ref({
-    //     count: 1,
-    //   });
-    //   let dummy;
-    //   effect(() => {
-    //     dummy = a.value.count;
-    //   });
-    //   expect(dummy).toBe(1);
-    //   a.value.count = 2;
-    //   expect(dummy).toBe(2);
-    // });
+    it("should make nested properties reactive", () => {
+      const a = ref({
+        count: {
+          count1:100
+        },
+      });
+      let dummy;
+      effect(() => {
+        dummy = a.value.count.count1;
+      });
+      // expect(dummy).toBe(1);
+      a.value.count.count1 = 200;
+      expect(dummy).toBe(200);
+    });
   
     // it("proxyRefs", () => {
     //   const user = {

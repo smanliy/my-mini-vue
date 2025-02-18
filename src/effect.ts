@@ -42,7 +42,7 @@ export class ReactiveEffect{
         effect.deps.length = 0
     }
 }
-function isTracking(){
+export function isTracking(){
     return shouldTrack && activeEffect !=undefined
 }
 
