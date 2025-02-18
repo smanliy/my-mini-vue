@@ -69,14 +69,13 @@ describe("ref", () => {
       expect(isRef(a)).toBe(true);
       expect(isRef(1)).toBe(false);
       expect(isRef(user)).toBe(false);
+      
+    });
+  
+    it("unRef", () => {
+      const a = ref(1);
       expect(unRef(a)).toBe(1);
       expect(unRef(1)).toBe(1);
     });
-  
-    // it("unRef", () => {
-    //   const a = ref(1);
-    //   expect(unRef(a)).toBe(1);
-    //   expect(unRef(1)).toBe(1);
-    // });
   });
   
