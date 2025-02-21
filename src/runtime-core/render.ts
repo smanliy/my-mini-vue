@@ -1,4 +1,4 @@
-import { isObject } from "../shared/index";
+import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function render(vnode: any, container: any) {
@@ -7,11 +7,13 @@ export function render(vnode: any, container: any) {
 // patch 函数用于判断虚拟节点的类型，并调用相应的处理函数
 function patch(vnode: any, container: any) {
 // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
-  if (typeof vnode.type == "string") {
+const { shapeFlag } = vnode;
+  if (shapeFlag & ShapeFlags.ELEMENT) {
     processElement(vnode, container);
-  } else if (isObject(vnode.type))
+  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
      // 如果 vnode 是一个对象，则处理组件
     processComponent(vnode, container);
+}
 }
 // processComponent 函数用于处理组件节点
 function processComponent(vnode: any, container: any) {
@@ -47,12 +49,12 @@ function processElement(vnode: any, container: any) {
 function mountElement(vnode: any, container: any) {
     // 创建元素节点
   const el =(vnode.el = document.createElement(vnode.type));
-
+    const {shapeFlag} = vnode;
   const { children } = vnode;
   // 处理元素的子节点
-  if (typeof children === "string") {
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     el.innerHTML = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(vnode, el);
   }
 

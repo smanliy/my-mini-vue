@@ -1,5 +1,5 @@
  const publicPropertiesMap ={
-    $el:(i:any)=>i.node.el
+    $el:(i:any)=>i.vnode.el
  }
  export const publicInstanceProxyHandlers = {
     get:({_:instance}:{_:any},key:any)=>{
@@ -8,6 +8,9 @@
             debugger;
             return setupState[key]
         }
+
+
+
         const publicGetter = publicPropertiesMap[key as keyof typeof publicPropertiesMap]
 
         if(publicGetter){
