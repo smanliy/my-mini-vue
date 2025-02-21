@@ -1,65 +1,74 @@
 import { isObject } from "../shared/index";
 import { createComponentInstance, setupComponent } from "./component";
-
+// render 函数用于渲染虚拟节点到指定的容器中
 export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
-
+// patch 函数用于判断虚拟节点的类型，并调用相应的处理函数
 function patch(vnode: any, container: any) {
-   //判断vnode是不是element ，若是，则处理element  TODO
-   debugger;
-   if(typeof vnode.type == "string"){
-    processElement(vnode,container)
-   }else if(isObject(vnode.type))
-  //处理组件
-  processComponent(vnode, container);
+// 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
+  if (typeof vnode.type == "string") {
+    processElement(vnode, container);
+  } else if (isObject(vnode.type))
+     // 如果 vnode 是一个对象，则处理组件
+    processComponent(vnode, container);
 }
-
+// processComponent 函数用于处理组件节点
 function processComponent(vnode: any, container: any) {
-  debugger;
   mountComponent(vnode, container);
 }
-function mountComponent(vnode: any, container: any) {
-  const instance = createComponentInstance(vnode);
+// mountComponent 函数用于挂载组件
+function mountComponent(initVnode: any, container: any) {
+    // 创建组件实例
+  const instance = createComponentInstance(initVnode);
+    // 设置组件实例
   setupComponent(instance);
-
-  setupRenderEffect(instance, container);
+  // 设置渲染效果
+  setupRenderEffect(instance, initVnode,container);
 }
+// setupRenderEffect 函数用于设置渲染效果
+function setupRenderEffect(instance: any,initVnode:any, container: any) {
+  const {proxy} = instance
+  // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
+  const subTree = instance.render.call(proxy);
 
-function setupRenderEffect(instance: any, container: any) {
-  const subTree = instance.render();
 
-  //vnode  ——>进一步调用patch
-
-  //vnode  ——> patch ——>element ——>mountElement
+   // 通过 patch 函数将虚拟节点渲染到 DOM 中
   patch(subTree, container);
+
+
+  // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
+  initVnode.el = subTree.el
 }
 function processElement(vnode: any, container: any) {
-  mountElement(vnode,container)
+  mountElement(vnode, container);
 }
-function mountElement(vnode:any,container:any){
-  const el = document.createElement(vnode.type)
+// mountElement 函数用于挂载元素节点
+function mountElement(vnode: any, container: any) {
+    // 创建元素节点
+  const el =(vnode.el = document.createElement(vnode.type));
 
-  const {children} = vnode
-
-
-  if(typeof children === "string"){
-    el.innerHTML = children
-  }else if(Array.isArray(children)){
-    mountChildren(vnode,el)
+  const { children } = vnode;
+  // 处理元素的子节点
+  if (typeof children === "string") {
+    el.innerHTML = children;
+  } else if (Array.isArray(children)) {
+    mountChildren(vnode, el);
   }
 
-  const {props} = vnode
+  const { props } = vnode;
   //props
-  for(const key in props){
-    const val = props[key]
-    el.setAttribute(key,val)
+    // 处理元素的属性
+  for (const key in props) {
+    const val = props[key];
+    el.setAttribute(key, val);
   }
-  container.append(el)
+    // 将元素添加到容器中
+  container.append(el);
 }
-
-function mountChildren(vnode:any,el:any){
-  vnode.children.forEach((v:any) => {
-    patch(v,el)
+// mountChildren 函数用于挂载子节点
+function mountChildren(vnode: any, el: any) {
+  vnode.children.forEach((v: any) => {
+    patch(v, el);
   });
 }

@@ -1,14 +1,18 @@
+import { publicInstanceProxyHandlers } from "./componentPublicInstance"
+// component.ts 文件主要负责创建和设置组件实例
 //根据虚拟节点创建组件实例
 export function createComponentInstance(vnode: any) {
     const component = {
-        vnode,
-        type:vnode.type
+        vnode,//虚拟节点
+        type:vnode.type,//组件类型
+        setupState:{},//组件的状态
+        el:null//组件的DOM元素
     }
 
     return component
 }
 
-//用于设置组件实例的相关属性。这里可以做很多初始化工作
+//用于设置组件实例的相关属性。
 export function setupComponent(instance:any){
     //TODO
 
@@ -16,17 +20,18 @@ export function setupComponent(instance:any){
 
     //initSlots()
 
-    //对于有状态的组件（即类组件），会调用 setupStatefulComponent 来设置组件实例的状态。
+    //设置有状态组件的状态
     setupStatefulComponent(instance)
 }
 
 function setupStatefulComponent(instance:any) {
-    const Component = instance.vnode.type // 组件对象
-
+    const Component = instance.vnode.type // 从虚拟节点中获取组件对象
+    //创建组件的代理对象处理组件实例的属性访问
+    instance.proxy = new Proxy({_:instance},publicInstanceProxyHandlers)
     const {setup} = Component
 
     if(setup){
-        //setuop可以返回function | Object ,如果返回fnction，就认为返回的是组件的渲染函数，如果返回object,将他注入到当前组件上下文中
+        //setuoup可以返回function | Object ,如果返回fnction，就认为返回的是组件的渲染函数，如果返回object,将他注入到当前组件上下文中
         const setupResult = setup()
 
         handleSetupResult(instance,setupResult)
