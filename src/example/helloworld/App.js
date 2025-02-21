@@ -4,17 +4,24 @@ export const App = {
     render() {
         window.self = this
         //返回虚拟节点
-        return h("div", {
+        return h("div", 
+            {
             id:"root",
-            class:['red',"hard"]
-        }, 
+            class:['red',"hard"],
+            onClick(){
+                console.log("click")
+            },
+            onMousedown(){
+                console.log("mousedown")
+            }
+            }, 
         "hi," + this.msg
         // [h("p",{class:"red"},"hi"),h("p",{class:"blue"},"mini-vue")]
      )
     },
     setup() {                                                   
         return {
-            msg: "mini-vue"
+            msg: "my-mini-vue"
         }
     }
 }

@@ -63,7 +63,14 @@ function mountElement(vnode: any, container: any) {
     // 处理元素的属性
   for (const key in props) {
     const val = props[key];
+    const isOn = (key:any) => /^on[A-Z]/.test(key)
     el.setAttribute(key, val);
+    if(isOn(key)){
+      const event = key.slice(2).toLowerCase()
+      console.log(key)
+      el.addEventListener(event,val)
+    }
+   
   }
     // 将元素添加到容器中
   container.append(el);
