@@ -1,6 +1,6 @@
 import { track, trigger } from "./effect";
 import { reactive, ReactiveFlags, readonly } from "./reactive";
-import { extend, isObject } from "./shared";
+import { extend, isObject } from "./shared/index";
 //重构优化，避免每次都要创建get
 const get = createGetter(false);
 const set = createSetter()

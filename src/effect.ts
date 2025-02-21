@@ -1,4 +1,4 @@
-import { extend } from "./shared";
+import { extend } from "./shared/index";
 let activeEffect:ReactiveEffect | null = null;
 let shouldTrack:boolean | null ;
 export class ReactiveEffect{
