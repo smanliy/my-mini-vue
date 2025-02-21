@@ -64,11 +64,13 @@ function mountElement(vnode: any, container: any) {
   for (const key in props) {
     const val = props[key];
     const isOn = (key:any) => /^on[A-Z]/.test(key)
-    el.setAttribute(key, val);
+
     if(isOn(key)){
       const event = key.slice(2).toLowerCase()
       console.log(key)
       el.addEventListener(event,val)
+    }else{
+      el.setAttribute(key, val);
     }
    
   }
