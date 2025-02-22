@@ -1,4 +1,5 @@
 import { mutableHandlers, readonlyHandlers, shallowReadonlyBaseHandlers } from "./baseHandler";
+import { isObject } from "./shared/index";
 
 
 export const enum ReactiveFlags{
@@ -16,6 +17,10 @@ export function readonly<T extends object>(raw:T):T{
 }
 //创建proxy对象
 function createProxyObject<T extends object>(raw:T,handlers:ProxyHandler<T>):T{
+  if(!isObject(raw)){
+    console.warn(`target ${raw} is not a object`)
+    return raw
+  }
   return new Proxy(raw,handlers) 
 }
 //判断是否是reactive对象

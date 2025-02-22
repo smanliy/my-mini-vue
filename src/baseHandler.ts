@@ -9,6 +9,7 @@ const readonlySet = function (target:object, key:string |symbol, value:any){
     console.warn(`${target}的${String(key)}属性被设置为只读属性`)
     return true
 }
+// shallowReadonly 是一种浅层只读的响应式处理器。它的作用是将对象的顶层属性设置为只读，但不递归地将嵌套的对象属性设置为只读。这意味着只有对象的第一层属性是只读的，而嵌套的对象属性仍然是可变的。
 const shallowReadonlyGet = createGetter(true,true)
 //isreadyonly -----> 决定是否收集依赖
 function createGetter(isreadonly:boolean,shallow:boolean = false){
