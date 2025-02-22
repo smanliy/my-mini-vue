@@ -1,4 +1,5 @@
 import { shallowReadonly } from "../reactive"
+import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
 import { publicInstanceProxyHandlers } from "./componentPublicInstance"
 // component.ts 文件主要负责创建和设置组件实例
@@ -10,8 +11,10 @@ export function createComponentInstance(vnode: any) {
         setupState:{},//组件的状态
         el:null//组件的DOM元素,
         ,
-        props:{}
+        props:{},
+        emit:()=>{}
     }
+    component.emit = emit.bind(null,component) as any
 
     return component
 }
@@ -36,7 +39,7 @@ function setupStatefulComponent(instance:any) {
 
     if(setup){
         //setuoup可以返回function | Object ,如果返回fnction，就认为返回的是组件的渲染函数，如果返回object,将他注入到当前组件上下文中
-        const setupResult = setup(shallowReadonly(instance.props))
+        const setupResult = setup(shallowReadonly(instance.props),{emit:instance.emit})
 
         handleSetupResult(instance,setupResult)
     }
