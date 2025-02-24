@@ -2,6 +2,7 @@ import { shallowReadonly } from "../reactive"
 import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
 import { publicInstanceProxyHandlers } from "./componentPublicInstance"
+import { initSlots } from "./componentSlots"
 // component.ts 文件主要负责创建和设置组件实例
 //根据虚拟节点创建组件实例
 export function createComponentInstance(vnode: any) {
@@ -11,6 +12,7 @@ export function createComponentInstance(vnode: any) {
         setupState:{},//组件的状态
         el:null//组件的DOM元素,
         ,
+        slots:{},
         props:{},
         emit:()=>{}
     }
@@ -25,7 +27,7 @@ export function setupComponent(instance:any){
 
     initProps(instance,instance.vnode.props)
 
-    //initSlots()
+    initSlots(instance,instance.vnode.children)
 
     //设置有状态组件的状态
     setupStatefulComponent(instance)
