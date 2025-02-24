@@ -1,6 +1,6 @@
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
-import { Fragment } from "./createVNode";
+import { Text, Fragment } from "./createVNode";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function render(vnode: any, container: any) {
   patch(vnode, container);
@@ -13,6 +13,9 @@ switch(type){
   case Fragment:
     processFragment(vnode,container)
     break;
+  case Text:
+   processText(vnode,container)
+   break;
     default  : if (shapeFlag & ShapeFlags.ELEMENT) {
       processElement(vnode, container);
     } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
@@ -40,7 +43,11 @@ function mountComponent(initVnode: any, container: any) {
 function setupRenderEffect(instance: any,initVnode:any, container: any) {
   const {proxy} = instance
   // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
-  const subTree = instance.render.call(proxy);
+  let subTree = {} as any;
+  if(typeof instance.render === 'function'){
+    subTree = instance.render.call(proxy);
+  }
+
 
 
    // 通过 patch 函数将虚拟节点渲染到 DOM 中
@@ -93,5 +100,13 @@ function mountChildren(vnode: any, el: any) {
 }
 function processFragment(vnode: any, container: any) {
   mountChildren(vnode,container)
+}
+
+function processText(vnode:any,container:any) {
+ const {children} = vnode;
+ //注释?
+ const testNode = (vnode.el = document.createTextNode(children));
+
+ container.append(testNode)
 }
 
