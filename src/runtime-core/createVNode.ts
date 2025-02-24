@@ -14,7 +14,13 @@ export function createVNode(type:any,props?:any,children?:any){
     if(typeof children === "string"){
         vnode.shapeFlag|= ShapeFlags.TEXT_CHILDREN
     }else if(Array.isArray(children)){vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN}
-
+    //组件类型 + children object
+    if(vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
+    ){
+        if(typeof children === "object"){
+            vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN
+        }
+    }
     return vnode
 }
 

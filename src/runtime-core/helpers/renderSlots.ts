@@ -1,9 +1,12 @@
 import { createVNode } from "../createVNode";
 
-export function renderSlots(slots:any,name:any){
+export function renderSlots(slots:any,name:any,props:any){
     const slot = slots[name]
     if(slot){
-        return createVNode("div",{},slot)
+        if(typeof slot == "function"){
+            return createVNode("div",{},slot(props))
+        }
+
     }
 
 }

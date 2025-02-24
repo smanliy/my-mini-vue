@@ -10,10 +10,14 @@ export const Foo = {
     },
     render() {
         const foo = h("p", {}, "foo")
+        const age = 18
+
         console.log(this.$slots)
         //this.$slots返回虚拟节点的children
         return h("div", {},
-            [renderSlots(this.$slots, "header"),
+            [renderSlots(this.$slots, "header",{
+                age
+            }),
                 foo,
             renderSlots(this.$slots, "footer")
             ])

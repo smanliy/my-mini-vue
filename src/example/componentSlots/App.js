@@ -10,8 +10,8 @@ export const App = {
 
         const foo = h(Foo, {},
             {
-                header: h("p", {}, "header"),
-                footer: h("p", {}, "footer")
+                header: ({age})=>h("p", {}, "header" + age),
+                footer: ()=>h("p", {}, "footer")
             }
         )
 
