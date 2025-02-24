@@ -10,11 +10,24 @@ export const App = {
             {
             id:"root",
             class:['red',"hard"],
+            onClick(){
+                console.log("click")
+            },
+            onMousedown(){
+                console.log("mousedown")
+            }
             }, 
         // "hi," + this.msg
-        [h("p",{class:"red"},"hi"),h("p",{class:"blue"},"mini-vue")]
+        // [h("p",{class:"red"},"hi"),h("p",{class:"blue"},"mini-vue")]
 
-       
+        [h('div',{}, "hi," +this.msg),h(Foo,{
+            onAdd(a,b){
+                console.log("onAdd",a,b)
+            },
+            onAddFoo(){
+                console.log("onAddFoo")
+            }
+        })]
      )
     },
     setup() {                                                   
