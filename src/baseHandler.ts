@@ -56,3 +56,4 @@ export const shallowReadonlyBaseHandlers:ProxyHandler<object> = extend({},readon
     get:shallowReadonlyGet
   }
 )
+

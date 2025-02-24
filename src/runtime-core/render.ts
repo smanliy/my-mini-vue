@@ -1,5 +1,6 @@
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
+import { Fragment } from "./createVNode";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function render(vnode: any, container: any) {
   patch(vnode, container);
@@ -7,13 +8,20 @@ export function render(vnode: any, container: any) {
 // patch 函数用于判断虚拟节点的类型，并调用相应的处理函数
 function patch(vnode: any, container: any) {
 // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
-const { shapeFlag } = vnode;
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-     // 如果 vnode 是一个对象，则处理组件
-    processComponent(vnode, container);
+const { type ,shapeFlag } = vnode;
+switch(type){
+  case Fragment:
+    processFragment(vnode,container)
+    break;
+    default  : if (shapeFlag & ShapeFlags.ELEMENT) {
+      processElement(vnode, container);
+    } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+       // 如果 vnode 是一个对象，则处理组件
+      processComponent(vnode, container);
+  }
+  break;
 }
+
 }
 // processComponent 函数用于处理组件节点
 function processComponent(vnode: any, container: any) {
@@ -83,3 +91,7 @@ function mountChildren(vnode: any, el: any) {
     patch(v, el);
   });
 }
+function processFragment(vnode: any, container: any) {
+  mountChildren(vnode,container)
+}
+
