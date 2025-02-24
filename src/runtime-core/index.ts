@@ -1,4 +1,4 @@
 import { createApp } from "./createApp";
 import { h } from "./h";
-
-export {createApp,h}
+import { renderSlots } from "./helpers/renderSlots";
+export {createApp,h,renderSlots}
