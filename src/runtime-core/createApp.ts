@@ -13,7 +13,7 @@ export function createApp(rootComponent:any){
 
 
 
-            render(vnode,rootContainer)
+            render(vnode, rootContainer)
         }
     }
 }

@@ -3,9 +3,11 @@ import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { publicInstanceProxyHandlers } from "./componentPublicInstance";
 import { initSlots } from "./componentSlots";
+import { provide } from "./helpers/apiInject";
 // component.ts 文件主要负责创建和设置组件实例
 //根据虚拟节点创建组件实例
-export function createComponentInstance(vnode: any) {
+export function createComponentInstance(vnode: any,parent:any) {
+    console.log("createComponentInstance",parent)
   const component = {
     vnode, //虚拟节点
     type: vnode.type, //组件类型
@@ -14,6 +16,8 @@ export function createComponentInstance(vnode: any) {
     slots: {},
     props: {},
     emit: () => {},
+    providers:parent ? parent.providers : {},
+    parent 
   };
   component.emit = emit.bind(null, component) as any;
 
