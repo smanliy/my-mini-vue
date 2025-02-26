@@ -1,9 +1,9 @@
-import { shallowReadonly } from "../reactive";
+import { shallowReadonly } from "../reactivity/reactive";
+import { proxyRefs } from "../reactivity";
 import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { publicInstanceProxyHandlers } from "./componentPublicInstance";
 import { initSlots } from "./componentSlots";
-import { provide } from "./helpers/apiInject";
 // component.ts 文件主要负责创建和设置组件实例
 //根据虚拟节点创建组件实例
 export function createComponentInstance(vnode: any,parent:any) {
@@ -60,7 +60,7 @@ function handleSetupResult(instance: any, setupResult: any) {
 
   // setup 返回的是一个对象，包含了组件的响应式状态、计算属性和方法等。Vue 会将这个对象赋值给组件实例的 setupState 属性，从而使得这些状态、计算属性等可以通过组件实例访问。
   if (typeof setupResult === "object") {
-    instance.setupState = setupResult;
+    instance.setupState = proxyRefs(setupResult);
   }
   //保证组件的render一定是有值的
   finishComponentSetup(instance);

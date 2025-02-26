@@ -1,5 +1,5 @@
 import { ReactiveEffect, trackEffects, triggerEffects } from "./effect";
-import { hasChanged, isObject } from "./shared/index";
+import { hasChanged, isObject } from "../shared/index";
 import { isTracking } from "./effect";
 import { reactive } from "./reactive";
 class RefIml{
@@ -49,6 +49,7 @@ export function unRef(ref:any){
     return isRef(ref)?ref.value :ref
 }
 //proxyRefs
+//直接获取.value之后的值
 export function proxyRefs(objectsWithRefs:Record<string | symbol, any>){
     return new Proxy(objectsWithRefs,{
         get:(target,key)=>{

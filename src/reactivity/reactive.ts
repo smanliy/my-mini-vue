@@ -1,5 +1,5 @@
 import { mutableHandlers, readonlyHandlers, shallowReadonlyBaseHandlers } from "./baseHandler";
-import { isObject } from "./shared/index";
+import { isObject } from "../shared/index";
 
 
 export const enum ReactiveFlags{
