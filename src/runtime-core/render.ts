@@ -4,7 +4,7 @@ import { createAppApi } from "./createApp";
 import { Text, Fragment } from "./createVNode";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function createRender(options: any) {
-  const { createElement, pathProp, insert } = options;
+  const { createElement:hostCreateElement, pathProp:hostPathProps, insert:hostInsert } = options;
 
   function render(vnode: any, container: any) {
     patch(vnode, container, null);
@@ -69,7 +69,7 @@ export function createRender(options: any) {
   // mountElement 函数用于挂载元素节点
   function mountElement(vnode: any, container: any, parentComponent: any) {
     // 创建元素节点
-    const el = (vnode.el = createElement(vnode.type));
+    const el = (vnode.el = hostCreateElement(vnode.type));
     const { shapeFlag } = vnode;
     const { children } = vnode;
     // 处理元素的子节点
@@ -85,11 +85,11 @@ export function createRender(options: any) {
     for (const key in props) {
       const val = props[key];
 
-      pathProp(el, key, val);
+      hostPathProps(el, key, val);
     }
     // 将元素添加到容器中
     // container.append(el);
-    insert(el, container);
+    hostInsert(el, container);
   }
   // mountChildren 函数用于挂载子节点
   function mountChildren(vnode: any, el: any, parentComponent: any) {
