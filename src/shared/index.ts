@@ -24,3 +24,6 @@ export const camelize = (str:string) =>{
 export const toHandlerKey = (str:string)=>{
         return str? "on"+ capitalize(str) :""
     }
+
+
+export const EMPTY_OBJ = {}

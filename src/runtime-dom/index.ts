@@ -4,15 +4,19 @@ function createElement(type:any){
     return document.createElement(type)
 }
 
-function pathProp(el:any,key:any,val:any){
+function pathProp(el:any,key:any,preVal:any,nextVal:any){
         const isOn = (key:any) => /^on[A-Z]/.test(key)
 
     if(isOn(key)){
       const event = key.slice(2).toLowerCase()
       console.log(key)
-      el.addEventListener(event,val)
+      el.addEventListener(event,nextVal)
     }else{
-      el.setAttribute(key, val);
+        if(nextVal === undefined || nextVal === null
+        ){
+            el.removeAttribute(key)
+        }
+      el.setAttribute(key, nextVal);
     }
 }
 
