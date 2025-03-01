@@ -21,8 +21,9 @@ function pathProp(el:any,key:any,preVal:any,nextVal:any){
 }
 
 
-function insert(el:any,container:any){
-    container.append(el)
+function insert(el:any,container:any,anchor:any){
+    // container.append(el)
+    container.insertBefore(el,anchor)
 }
 function setElement(el:any,text:any){
     el.textContent = text
