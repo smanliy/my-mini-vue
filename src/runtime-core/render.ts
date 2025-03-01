@@ -10,6 +10,8 @@ export function createRender(options: any) {
     createElement: hostCreateElement,
     pathProp: hostPathProps,
     insert: hostInsert,
+    remove: hostRemove,
+    setElement: hostSetElementText,
   } = options;
 
   function render(n2: any, container: any) {
@@ -101,11 +103,11 @@ export function createRender(options: any) {
     if (!n1) {
       mountElement(n2, container, parentComponent);
     } else {
-      patchElement(n1, n2, container);
+      patchElement(n1, n2, container,parentComponent);
     }
   }
 
-  function patchElement(n1: any, n2: any, container: any) {
+  function patchElement(n1: any, n2: any, container: any,parentComponent:any) {
     console.log("patchele", n1, n2);
     const oldProps = n1.props || EMPTY_OBJ;
 
@@ -113,14 +115,40 @@ export function createRender(options: any) {
     // 在 Vue 的虚拟 DOM 渲染过程中，第一次渲染时的 n2 会在后续更新过程中作为 n1 传递给相关的函数。这个过程主要体现在 setupRenderEffect 函数中，通过 effect 函数来响应式地更新组件。在初次渲染时，n1 是 null，n2 是新的虚拟节点。在更新渲染时，n1 是旧的虚拟节点，n2 是新的虚拟节点，n2 会作为 n1 传递给相关的函数，以便进行最小化的 DOM 更新。
     //齐天大圣
     const el = (n2.el = n1.el);
-    // console.log("添加n2",n1.el === n2.el)
-    // const el =  n1.el
-    // console.log("不添加n2",n1.el === n2.el)
-    // console.log("n1.el",n1.el)
-    // console.log("n2.el",n2.el)
-    // console.log(el)
+    patchChildren(n1, n2, el,parentComponent);
     patchProps(el, oldProps, newProps);
   }
+
+  function patchChildren(n1: any, n2: any, container: any,parentComponent:any) {
+    const prevShapeFlag = n1.shapeFlag;
+    const { shapeFlag } = n2;
+    const c2 = n2.children;
+    const c1 = n1.children;
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        //1.把老的child清空
+        unmountChildren(n1.children);
+        //2.添加新的text
+        if(c1 !== c2){
+          hostSetElementText(container,c2);
+        }
+        
+      }
+    }else{
+      if(prevShapeFlag & ShapeFlags.TEXT_CHILDREN){
+        hostSetElementText(container,"");
+        mountChildren(c2, container,parentComponent);
+      }
+    }
+  }
+  function unmountChildren(children: any) {
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i].el;
+      //remove
+      hostRemove(el);
+    }
+  }
+
   function patchProps(el: any, oldProps: any, newProps: any) {
     if (oldProps != newProps) {
       for (const key in newProps) {
@@ -132,14 +160,13 @@ export function createRender(options: any) {
           hostPathProps(el, key, preProp, nextProp);
         }
       }
-      if(oldProps != EMPTY_OBJ){
+      if (oldProps != EMPTY_OBJ) {
         for (const key in oldProps) {
           if (!(key in newProps)) {
             el.removeAttribute(key);
           }
         }
       }
-
     }
   }
 
@@ -153,7 +180,7 @@ export function createRender(options: any) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       el.innerHTML = children;
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(n2, el, parentComponent);
+      mountChildren(n2.children, el, parentComponent);
     }
 
     const { props } = n2;
@@ -169,8 +196,8 @@ export function createRender(options: any) {
     hostInsert(el, container);
   }
   // mountChildren 函数用于挂载子节点
-  function mountChildren(n2: any, el: any, parentComponent: any) {
-    n2.children.forEach((v: any) => {
+  function mountChildren(children: any, el: any, parentComponent: any) {
+    children.forEach((v: any) => {
       patch(null, v, el, parentComponent);
     });
   }
@@ -180,7 +207,7 @@ export function createRender(options: any) {
     container: any,
     parentComponent: any
   ) {
-    mountChildren(n2, container, parentComponent);
+    mountChildren(n2.children, container, parentComponent);
   }
 
   function processText(n1: any, n2: any, container: any) {

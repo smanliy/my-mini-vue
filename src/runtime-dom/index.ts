@@ -24,15 +24,25 @@ function pathProp(el:any,key:any,preVal:any,nextVal:any){
 function insert(el:any,container:any){
     container.append(el)
 }
-
+function setElement(el:any,text:any){
+    el.textContent = text
+}
 const render:any = createRender({
     createElement,
     pathProp,
-    insert
+    insert,
+    remove,
+    setElement
 })
 
 export function createApp(...args:any){
     return render.createApp(...args)
 }
 
+function remove(child:any){
+    const parent = child.parentNode;
+    if(parent){
+        parent.removeChild(child)
+    }
+}
 export * from '../runtime-core'

@@ -12,7 +12,7 @@ export const App = {
             class:['red',"hard"],
             }, 
         // "hi," + this.msg
-        [h("p",{class:"red"},"hi"),h("p",{class:"blue"},"mini-vue")]
+        [h("p",{class:"red"},[h("p",{class:"red"},"newhi")]),h("p",{class:"blue"},"mini-vue")]
 
        
      )
