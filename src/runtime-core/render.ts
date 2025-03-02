@@ -14,26 +14,32 @@ export function createRender(options: any) {
     setElement: hostSetElementText,
   } = options;
 
-  function render(n2: any, container: any,anchor:any) {
-    patch(null, n2, container, null,null);
+  function render(n2: any, container: any, anchor: any) {
+    patch(null, n2, container, null, null);
   }
   //  函数用于比较新旧虚拟节点，并根据差异进行最小化的 DOM 更新。它接受四个参数：n1 表示旧的虚拟节点，n2 表示新的虚拟节点，container 表示要渲染的容器，parentComponent 表示父组件。
-  function patch(n1: any, n2: any, container: any, parentComponent: any,anchor:any) {
+  function patch(
+    n1: any,
+    n2: any,
+    container: any,
+    parentComponent: any,
+    anchor: any
+  ) {
     // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
     const { type, shapeFlag } = n2;
     switch (type) {
       case Fragment:
-        processFragment(n1, n2, container, parentComponent,anchor);
+        processFragment(n1, n2, container, parentComponent, anchor);
         break;
       case Text:
         processText(n1, n2, container);
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(n1, n2, container, parentComponent,anchor);
+          processElement(n1, n2, container, parentComponent, anchor);
         } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
           // 如果 vnode 是一个对象，则处理组件
-          processComponent(n1, n2, container, parentComponent,anchor);
+          processComponent(n1, n2, container, parentComponent, anchor);
         }
         break;
     }
@@ -44,9 +50,9 @@ export function createRender(options: any) {
     n2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
-    mountComponent(n2, container, parentComponent,anchor);
+    mountComponent(n2, container, parentComponent, anchor);
   }
   // mountComponent 函数用于挂载组件
   function mountComponent(
@@ -60,10 +66,16 @@ export function createRender(options: any) {
     // 设置组件实例
     setupComponent(instance);
     // 设置渲染效果
-    setupRenderEffect(initialVNode, instance, initialVNode, container,anchor);
+    setupRenderEffect(initialVNode, instance, initialVNode, container, anchor);
   }
   // setupRenderEffect 函数用于设置渲染效果
-  function setupRenderEffect(n1: any, instance: any, n2: any, container: any,anchor:any) {
+  function setupRenderEffect(
+    n1: any,
+    instance: any,
+    n2: any,
+    container: any,
+    anchor: any
+  ) {
     effect(() => {
       if (instance.isMounted) {
         const { proxy } = instance;
@@ -74,7 +86,7 @@ export function createRender(options: any) {
         }
 
         // 通过 patch 函数将虚拟节点渲染到 DOM 中
-        patch(null, subTree, container, instance,anchor);
+        patch(null, subTree, container, instance, anchor);
 
         // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
         n2.el = subTree.el;
@@ -89,7 +101,7 @@ export function createRender(options: any) {
         const preSubTree = instance.subTree;
         instance.subTree = subTree;
         // 通过 patch 函数将虚拟节点渲染到 DOM 中
-        patch(preSubTree, subTree, container, instance,anchor);
+        patch(preSubTree, subTree, container, instance, anchor);
 
         // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
       }
@@ -101,12 +113,12 @@ export function createRender(options: any) {
     n2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
     if (!n1) {
-      mountElement(n2, container, parentComponent,anchor);
+      mountElement(n2, container, parentComponent, anchor);
     } else {
-      patchElement(n1, n2, container, parentComponent,anchor);
+      patchElement(n1, n2, container, parentComponent, anchor);
     }
   }
 
@@ -115,7 +127,7 @@ export function createRender(options: any) {
     n2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
     console.log("patchele", n1, n2);
     const oldProps = n1.props || EMPTY_OBJ;
@@ -125,7 +137,7 @@ export function createRender(options: any) {
     //齐天大圣
     const el = (n2.el = n1.el);
     // const el = n1.el;
-    patchChildren(n1, n2, el, parentComponent,anchor);
+    patchChildren(n1, n2, el, parentComponent, anchor);
     patchProps(el, oldProps, newProps);
   }
 
@@ -134,7 +146,7 @@ export function createRender(options: any) {
     n2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
     const prevShapeFlag = n1.shapeFlag;
     const { shapeFlag } = n2;
@@ -152,10 +164,16 @@ export function createRender(options: any) {
     } else {
       if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
         hostSetElementText(container, "");
-        mountChildren(c2, container, parentComponent,anchor);
+        mountChildren(c2, container, parentComponent, anchor);
       } else {
         //array diff array
-        patchKeyedChildren(n1.children, n2.children, container, parentComponent,anchor);
+        patchKeyedChildren(
+          n1.children,
+          n2.children,
+          container,
+          parentComponent,
+          anchor
+        );
       }
     }
   }
@@ -164,106 +182,138 @@ export function createRender(options: any) {
     c2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
     let i = 0;
     let e1 = c1.length - 1;
     let e2 = c2.length - 1;
-    const l2 =c2.length
-  // 确定需要比较的最小边界
+    const l2 = c2.length;
+    // 确定需要比较的最小边界
     let border = Math.min(e1, e2);
 
-  // 从头开始比较两个子节点数组
+    // 从头开始比较两个子节点数组
     while (i <= border) {
       const n1 = c1[i];
       const n2 = c2[i];
-  // 如果两个节点类型相同，则递归调用 patch 函数进行更新
+      // 如果两个节点类型相同，则递归调用 patch 函数进行更新
       if (isSomeVNodeType(n1, n2)) {
-        patch(n1, n2, container, parentComponent,anchor);
+        patch(n1, n2, container, parentComponent, anchor);
       } else {
-  // 如果节点类型不同，则退出循环
+        // 如果节点类型不同，则退出循环
         break;
       }
       i++;
     }
     //右侧
-    while(i <= e1 && i <= e2){
-      const n1 = c1[e1]
-      const n2 = c2[e2]
-      if(isSomeVNodeType(n1,n2)){
-        patch(n1, n2, container, parentComponent,anchor);
-      }else{
-        break
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1];
+      const n2 = c2[e2];
+      if (isSomeVNodeType(n1, n2)) {
+        patch(n1, n2, container, parentComponent, anchor);
+      } else {
+        break;
       }
-      e1--
-      e2--
+      e1--;
+      e2--;
     }
-//新的比旧的多
-    if(i > e1 ){
-      if(i <= e2){
-        const nextPro =  e2 + 1;
+    //新的比旧的多
+    if (i > e1) {
+      if (i <= e2) {
+        const nextPro = e2 + 1;
         // const anchor = i  + 1 > l2? null:c2[nextPro].el
-        const anchor = nextPro + 1< l2? c2[nextPro].el:null
-        while(i<=e2){
-          patch(null,c2[i],container,parentComponent,anchor)
-          i++
+        const anchor = nextPro + 1 < l2 ? c2[nextPro].el : null;
+        while (i <= e2) {
+          patch(null, c2[i], container, parentComponent, anchor);
+          i++;
+        }
+      }
+    }
+    //新的比旧的少
+    else if (i > e2) {
+      while (i <= e1) {
+        hostRemove(c1[i].el);
+        i++;
+      }
+    } else {
+      //中间对比
+      let s1 = i;
+      let s2 = i;
+      //当所有的新节点已经比对完时，旧节点还有剩余（和新节点比对有差异的部分有剩余），需要删除
+      const toBePatched = e2 - s2 + 1;
+      let hasPatched = 0;
+      let moved = false;
+      let maxNewIndexSofar = 0;
+      const keyToIndexMap = new Map();
+
+      const newIndexToOldIndexMap = new Array(toBePatched).fill(0); //初始化数组
+
+      //建立映射表
+      for (let i = s2; i <= e2; i++) {
+        const nextChild = c2[i];
+
+        keyToIndexMap.set(nextChild.key, i);
+      }
+
+      for (let i = s1; i <= e1; i++) {
+        const prevChild = c1[i];
+        if (hasPatched >= toBePatched) {
+          hostRemove(prevChild.el);
+          continue;
         }
 
+        //查哦找两种方法，遍历和映射表取决于用户是否设置key
+        let newIndex;
+        if (prevChild.key != null) {
+          newIndex = keyToIndexMap.get(prevChild.key);
+        } else {
+          for (let j = s2; j < e2; j++) {
+            if (isSomeVNodeType(prevChild, c2[j])) {
+              newIndex = j;
+              break;
+            }
+          }
+        }
+
+        if (newIndex === undefined) {
+          hostRemove(prevChild.el);
+        } else {
+          //判断是否移动
+          if (newIndex >= maxNewIndexSofar) {
+            maxNewIndexSofar = newIndex;
+          } else {
+            moved = true;
+          }
+          // 加 1 的原因是为了区分未找到的节点和索引为 0 的节点。
+          // 如果不加 1，当索引为 0 时，无法区分是未找到的节点还是索引为 0 的节点。
+          // 通过加 1，可以确保未找到的节点在数组中表示为 0，而索引为 0 的节点表示为 1。
+          newIndexToOldIndexMap[newIndex - s2] = i + 1;
+          patch(prevChild, c2[newIndex], container, parentComponent, null);
+          hasPatched++;
+        }
       }
 
-  }
-  //新的比旧的少
-  else if(i > e2){
-    while(i <= e1){
-      hostRemove(c1[i].el)
-      i++
-    }
-  }else{
-    //中间对比
-    let s1 = i;
-    let s2 = i;
-//当所有的新节点已经比对完时，旧节点还有剩余（和新节点比对有差异的部分有剩余），需要删除
-    const toBePatched = e2 - s2 + 1
-    let hasPatched = 0
-    const keyToIndexMap = new Map()
-    //建立映射表
-    for(let i = s2;i <= e2;i++){
-      const nextChild = c2[i];
+      const increasingNewIndexSequence = moved?getSequence(newIndexToOldIndexMap) : []
+      console.log(increasingNewIndexSequence);
+      let j = increasingNewIndexSequence.length - 1;
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        const nextIndex = i + s2;
+        const nextChild = c2[nextIndex];
 
-      keyToIndexMap.set(nextChild.key,i)
-    }
-
-    for (let i = s1; i <= e1; i++) {
-      const prevChild = c1[i];
-      if(hasPatched >= toBePatched) {
-        hostRemove(prevChild.el)
-        continue
-      }
-      
-      //查哦找两种方法，遍历和映射表取决于用户是否设置key
-      let newIndex
-      if(prevChild.key != null){
-        newIndex = keyToIndexMap.get(prevChild.key)
-      }else{
-
-
-        for(let j = s2;j < e2;j++){
-          if(isSomeVNodeType(prevChild,c2[j])){
-            newIndex = j
-            break
+        //锚点等于当前节点的下一个
+        const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null;
+        if(newIndexToOldIndexMap[i] === 0){
+          patch(null,nextChild,container,parentComponent,anchor)
+        }
+        else if (moved) {
+          if (i != increasingNewIndexSequence[j]) {
+            console.log("移动位置");
+            hostInsert(nextChild.el, container, anchor);
+          } else {
+            j--;
           }
         }
       }
-
-
-      if(newIndex === undefined){
-        hostRemove(prevChild.el)
-      }else{
-        patch(prevChild,c2[newIndex],container,parentComponent,null)
-        hasPatched++
-      }
     }
-  }
   }
 
   function isSomeVNodeType(n1: any, n2: any) {
@@ -301,7 +351,12 @@ export function createRender(options: any) {
   }
 
   // mountElement 函数用于挂载元素节点
-  function mountElement(n2: any, container: any, parentComponent: any,anchor:any) {
+  function mountElement(
+    n2: any,
+    container: any,
+    parentComponent: any,
+    anchor: any
+  ) {
     // 创建元素节点
     const el = (n2.el = hostCreateElement(n2.type));
     const { shapeFlag } = n2;
@@ -310,7 +365,7 @@ export function createRender(options: any) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       el.innerHTML = children;
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(n2.children, el, parentComponent,anchor);
+      mountChildren(n2.children, el, parentComponent, anchor);
     }
 
     const { props } = n2;
@@ -323,12 +378,17 @@ export function createRender(options: any) {
     }
     // 将元素添加到容器中
     // container.append(el);
-    hostInsert(el, container,anchor);
+    hostInsert(el, container, anchor);
   }
   // mountChildren 函数用于挂载子节点
-  function mountChildren(children: any, el: any, parentComponent: any,anchor:any) {
+  function mountChildren(
+    children: any,
+    el: any,
+    parentComponent: any,
+    anchor: any
+  ) {
     children.forEach((v: any) => {
-      patch(null, v, el, parentComponent,anchor);
+      patch(null, v, el, parentComponent, anchor);
     });
   }
   function processFragment(
@@ -336,9 +396,9 @@ export function createRender(options: any) {
     n2: any,
     container: any,
     parentComponent: any,
-    anchor:any
+    anchor: any
   ) {
-    mountChildren(n2.children, container, parentComponent,anchor);
+    mountChildren(n2.children, container, parentComponent, anchor);
   }
 
   function processText(n1: any, n2: any, container: any) {
@@ -349,4 +409,35 @@ export function createRender(options: any) {
     container.append(testNode);
   }
   return { createApp: createAppApi(render) };
+}
+function getSequence(arr: any) {
+  if (arr.length === 0) return [];
+
+  const dp = new Array(arr.length).fill(1);
+  const prev = new Array(arr.length).fill(-1);
+  let res = 1;
+  let resIndex = 0;
+
+  for (let i = 1; i < arr.length; i++) {
+    for (let j = 0; j < i; j++) {
+      if (arr[i] > arr[j]) {
+        if (dp[i] < dp[j] + 1) {
+          dp[i] = dp[j] + 1;
+          prev[i] = j;
+        }
+      }
+    }
+    if (res < dp[i]) {
+      res = dp[i];
+      resIndex = i;
+    }
+  }
+
+  const lisIndices = [];
+  for (let i = resIndex; i >= 0; i = prev[i]) {
+    lisIndices.push(i);
+    if (prev[i] === -1) break;
+  }
+  lisIndices.reverse();
+  return lisIndices;
 }
