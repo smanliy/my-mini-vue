@@ -17,7 +17,7 @@ export function createRender(options: any) {
   function render(n2: any, container: any,anchor:any) {
     patch(null, n2, container, null,null);
   }
-  // patch 函数用于判断虚拟节点的类型，并调用相应的处理函数
+  //  函数用于比较新旧虚拟节点，并根据差异进行最小化的 DOM 更新。它接受四个参数：n1 表示旧的虚拟节点，n2 表示新的虚拟节点，container 表示要渲染的容器，parentComponent 表示父组件。
   function patch(n1: any, n2: any, container: any, parentComponent: any,anchor:any) {
     // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
     const { type, shapeFlag } = n2;
@@ -198,7 +198,7 @@ export function createRender(options: any) {
       e1--
       e2--
     }
-
+//新的比旧的多
     if(i > e1 ){
       if(i <= e2){
         const nextPro =  e2 + 1;
@@ -210,10 +210,58 @@ export function createRender(options: any) {
         }
 
       }
-  }else if(i > e2){
+
+  }
+  //新的比旧的少
+  else if(i > e2){
     while(i <= e1){
       hostRemove(c1[i].el)
       i++
+    }
+  }else{
+    //中间对比
+    let s1 = i;
+    let s2 = i;
+//当所有的新节点已经比对完时，旧节点还有剩余（和新节点比对有差异的部分有剩余），需要删除
+    const toBePatched = e2 - s2 + 1
+    let hasPatched = 0
+    const keyToIndexMap = new Map()
+    //建立映射表
+    for(let i = s2;i <= e2;i++){
+      const nextChild = c2[i];
+
+      keyToIndexMap.set(nextChild.key,i)
+    }
+
+    for (let i = s1; i <= e1; i++) {
+      const prevChild = c1[i];
+      if(hasPatched >= toBePatched) {
+        hostRemove(prevChild.el)
+        continue
+      }
+      
+      //查哦找两种方法，遍历和映射表取决于用户是否设置key
+      let newIndex
+      if(prevChild.key != null){
+        newIndex = keyToIndexMap.get(prevChild.key)
+      }else{
+
+
+        for(let j = s2;j < e2;j++){
+          if(isSomeVNodeType(prevChild,c2[j])){
+            newIndex = j
+            break
+          }
+        }
+      }
+
+
+      if(newIndex === undefined){
+        hostRemove(prevChild.el)
+      }else{
+        patch(prevChild,c2[newIndex],container,parentComponent,null)
+        hasPatched++
+      }
     }
   }
   }
