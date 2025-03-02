@@ -161,25 +161,41 @@ import { ref,h } from "../../../lib/guide-mini-vue.esm.js"
 //     h("p", { key: "G" }, "G"),
 // ];
 //综合示例
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "Z" }, "Z"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "C" }, "C"),
+//     h("p", { key: "Y" }, "Y"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+
+//fix b 节点应该是 move 而不是删除之后重现创建
 const prevChildren = [
     h("p", { key: "A" }, "A"),
-    h("p", { key: "B" }, "B"),
+    h("p", {  }, "B"),
     h("p", { key: "C" }, "C"),
     h("p", { key: "D" }, "D"),
-    h("p", { key: "E" }, "E"),
-    h("p", { key: "Z" }, "Z"),
-    h("p", { key: "F" }, "F"),
-    h("p", { key: "G" }, "G"),
+
+
 ];
 const nextChildren = [
     h("p", { key: "A" }, "A"),
-    h("p", { key: "B" }, "B"),
-    h("p", { key: "D" }, "D"),
     h("p", { key: "C" }, "C"),
-    h("p", { key: "Y" }, "Y"),
-    h("p", { key: "E" }, "E"),
-    h("p", { key: "F" }, "F"),
-    h("p", { key: "G" }, "G"),
+    h("p", {  },"B"),
+    h("p", { key: "D" }, "D"),
 ];
 export default   {
     name:"TextToText",
