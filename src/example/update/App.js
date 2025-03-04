@@ -37,7 +37,7 @@ export const App = {
             id: "root",
             ...this.props
         },
-            [h("div", {}, this.count),
+            [h("div", {}, "count:" +this.count),
                 h("button", {onClick:this.onClick}, "click:"),
                 h("button", {
                     onClick: this.onChangePropsDemo1

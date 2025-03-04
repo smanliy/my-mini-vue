@@ -12,13 +12,13 @@ export function createComponentInstance(vnode: any,parent:any) {
     vnode, //虚拟节点
     type: vnode.type, //组件类型
     setupState: {}, //组件的状态
-    el: null, //组件的DOM元素,
     slots: {},
+    next:null,
     props: {},
     emit: () => {},
     providers:parent ? parent.providers : {},
     parent,
-    suBTree:{},
+    subTree:{},
     isMounted:false
   };
   component.emit = emit.bind(null, component) as any;

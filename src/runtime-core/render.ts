@@ -52,7 +52,16 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
-    mountComponent(n2, container, parentComponent, anchor);
+    if (!n1) {
+      mountComponent(n2, container, parentComponent, anchor);
+    } else {
+      updateComponent(n1, n2);
+    }
+  }
+  function updateComponent(n1: any, n2: any) {
+    const instance = (n2.component = n1.component);
+    instance.next = n2;
+    instance.update();
   }
   // mountComponent 函数用于挂载组件
   function mountComponent(
@@ -62,7 +71,10 @@ export function createRender(options: any) {
     anchor: any
   ) {
     // 创建组件实例
-    const instance = createComponentInstance(initialVNode, parentComponent);
+    const instance = (initialVNode.component = createComponentInstance(
+      initialVNode,
+      parentComponent
+    ));
     // 设置组件实例
     setupComponent(instance);
     // 设置渲染效果
@@ -76,8 +88,8 @@ export function createRender(options: any) {
     container: any,
     anchor: any
   ) {
-    effect(() => {
-      if (instance.isMounted) {
+    instance.update = effect(() => {
+      if (!instance.isMounted) {
         const { proxy } = instance;
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
@@ -92,6 +104,14 @@ export function createRender(options: any) {
         n2.el = subTree.el;
         instance.isMounted = true;
       } else {
+        console.log("update");
+        const { next, vnode } = instance;
+        if (next) {
+          next.el = vnode.el;
+          updateComponentPreRender(instance, next);
+        } else {
+        }
+
         const { proxy } = instance;
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
@@ -107,7 +127,12 @@ export function createRender(options: any) {
       }
     });
   }
+  function updateComponentPreRender(instance: any, nextVNode: any) {
+    instance.vnode = nextVNode;
+    instance.next = null;
 
+    instance.props = nextVNode.props;
+  }
   function processElement(
     n1: any,
     n2: any,
@@ -292,7 +317,9 @@ export function createRender(options: any) {
         }
       }
 
-      const increasingNewIndexSequence = moved?getSequence(newIndexToOldIndexMap) : []
+      const increasingNewIndexSequence = moved
+        ? getSequence(newIndexToOldIndexMap)
+        : [];
       console.log(increasingNewIndexSequence);
       let j = increasingNewIndexSequence.length - 1;
       for (let i = toBePatched - 1; i >= 0; i--) {
@@ -301,10 +328,9 @@ export function createRender(options: any) {
 
         //锚点等于当前节点的下一个
         const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null;
-        if(newIndexToOldIndexMap[i] === 0){
-          patch(null,nextChild,container,parentComponent,anchor)
-        }
-        else if (moved) {
+        if (newIndexToOldIndexMap[i] === 0) {
+          patch(null, nextChild, container, parentComponent, anchor);
+        } else if (moved) {
           if (i != increasingNewIndexSequence[j]) {
             console.log("移动位置");
             hostInsert(nextChild.el, container, anchor);
