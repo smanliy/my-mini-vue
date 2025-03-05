@@ -11,7 +11,7 @@ const enum TagType{
 export function baseParse(content: string) {
   //创建全局上下文对象
   const context = createParserContext(content);
-  return createRoot(parseChildren(context));
+  return createRoot(parseChildren(context,""));
 }
 /**
  * 创建 AST 的根节点
@@ -28,41 +28,59 @@ function createRoot(children: any) {
  * @param context 解析上下文
  * @returns 解析出的 AST 节点数组
  */
-function parseChildren(context: any) {
+function parseChildren(context: any,parentTag:any) {
   // 用于存储解析出的 AST 节点
   const nodes = [];
-  let node;
-  let s = context.source
-  // 如果当前 source 以 "{{" 开头，说明是插值表达式
-  if (s.startsWith("{{")) {
-    node = parseInterpolation(context);
-  }else if(s[0] ==="<"){
-    if(/[a-z]/i.test(s[1])){
-        node = parseElement(context)
+  while(!isEnd(context,parentTag)){
+    let node;
+    let s = context.source
+    // 如果当前 source 以 "{{" 开头，说明是插值表达式
+    if (s.startsWith("{{")) {
+      node = parseInterpolation(context);
+    }else if(s[0] ==="<"){
+      if(/[a-z]/i.test(s[1])){
+          node = parseElement(context)
+      }
     }
+    if(!node){
+      node = parseText(context)
+    }
+    // 将解析出来的节点添加到数组中
+    nodes.push(node);
   }
-  if(!node){
-    node = parseText(context)
-  }
-  // 将解析出来的节点添加到数组中
-  nodes.push(node);
+ 
   // 返回解析出的子节点
   return nodes;
 }
+function isEnd(context:any,parentTag:any){
+    //1.source有值的时候
+    //2.当遇到结束标签的时候
+    let s = context.source
+    if(parentTag && s.startsWith(`</${parentTag}>`)){
+        return true
+    }
 
+    return !context.source
+}
 function parseElement(context:any){
     //解析tag
-    const element =  parseTag(context,TagType.Start)
-    console.log("_____",context.source)
-    parseTag(context,TagType.End)
-    console.log("_____",context.source)
+    const element :any =  parseTag(context,TagType.Start)
+
+        element.children = parseChildren(context,element.tag)
+        parseTag(context,TagType.End)
     return element
 }
 function parseText(context:any){
-    //1.获取context
-    const content = parseTextData(context,context.source.length);
+    let endIndex = context.source.length
+    let endToken = "{{"
+    const index = context.source.indexOf(endToken)
+    if(index != -1){
+        endIndex = index
+    }
+    //1.获取context.2.text
+    const content = parseTextData(context,endIndex);
 
-    //2.推进
+
 
 
     return{
@@ -80,13 +98,11 @@ function parseTextData(context:any,length:number) {
 }
 function parseTag(context:any,type:TagType){
     const match = /^<\/?([a-z]*)/i.exec(context.source)
-    console.log(match)
     let tag;
     if(match){
         tag = match[1]
         advanceBy(context,match[0].length)
         advanceBy(context,1)
-        console.log(context)
     }
     if(type === TagType.End) return
     return {
