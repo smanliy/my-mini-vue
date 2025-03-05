@@ -41,6 +41,9 @@ function parseChildren(context: any) {
         node = parseElement(context)
     }
   }
+  if(!node){
+    node = parseText(context)
+  }
   // 将解析出来的节点添加到数组中
   nodes.push(node);
   // 返回解析出的子节点
@@ -54,6 +57,26 @@ function parseElement(context:any){
     parseTag(context,TagType.End)
     console.log("_____",context.source)
     return element
+}
+function parseText(context:any){
+    //1.获取context
+    const content = parseTextData(context,context.source.length);
+
+    //2.推进
+
+
+    return{
+        type:NodeTypes.TEXT,
+        content:content,
+    }
+
+    
+}
+function parseTextData(context:any,length:number) {
+    const content = context.source.slice(0, length);
+
+    advanceBy(context, length);
+    return content;
 }
 function parseTag(context:any,type:TagType){
     const match = /^<\/?([a-z]*)/i.exec(context.source)
