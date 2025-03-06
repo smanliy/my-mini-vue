@@ -1,16 +1,21 @@
-import { NodeTypes } from "./ast";
-
 //transform函数作用：遍历AST，修改AST
-export function transform(root:any,options?:any){
+export function transform(root:any,options:any = {}){
     const context = createTransformContext(root,options)
-    //1.遍历——深度优先搜索
+    //1.遍历——深度优先搜索//2.修改text content
     traverseNode(root,context)
-
-    //2.修改text content
+    //root.codegenNode
+    createRootCodegen(root)
+    
+}
+function createRootCodegen(root:any){
+    root.codegenNode = root.children[0]
 }
 //深度优先遍历dom树，递归
 function traverseNode(node:any,context:any){
     console.log(node)
+    if (!context || !context.nodeTransforms) { 
+        return;
+    }
     const nodeTransforms = context.nodeTransforms
     for (let i = 0; i < nodeTransforms.length; i++) {
         const transform = nodeTransforms[i];
@@ -31,9 +36,12 @@ function traverseChildren(node: any, context: any) {
 }
 
 function createTransformContext(root:any,options:any){
-    const context = {
-        root,
-        nodeTransforms:options.nodeTransforms || []
+    if(options){
+        const context = {
+            root,
+            nodeTransforms:options.nodeTransforms || []
+        }
+        return context
     }
-    return context
+
 }
