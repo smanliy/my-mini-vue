@@ -21,6 +21,7 @@ export function baseParse(content: string) {
 function createRoot(children: any) {
   return {
     children,
+    type:NodeTypes.ROOT
   };
 }
 /**

@@ -1,11 +1,14 @@
+import { NodeTypes } from "./ast"
+import { TO_DISPLAY_STRING } from "./runtimeHelpers"
+
 //transform函数作用：遍历AST，修改AST
 export function transform(root:any,options:any = {}){
-    const context = createTransformContext(root,options)
+    const context:any = createTransformContext(root,options)
     //1.遍历——深度优先搜索//2.修改text content
     traverseNode(root,context)
     //root.codegenNode
     createRootCodegen(root)
-    
+    root.helpers = [...context.helpers.keys()]
 }
 function createRootCodegen(root:any){
     root.codegenNode = root.children[0]
@@ -22,7 +25,17 @@ function traverseNode(node:any,context:any){
         transform(node)
         
     }
-    traverseChildren(node, context);
+    switch(node.type){
+        case NodeTypes.INTERPOLATION:
+            context.helper(TO_DISPLAY_STRING)
+            break;
+        case NodeTypes.ROOT:
+
+        case NodeTypes.ELEMENT:
+            traverseChildren(node,context)
+            break
+    }
+    
 }
 function traverseChildren(node: any, context: any) {
     const children = node.children;
@@ -39,7 +52,11 @@ function createTransformContext(root:any,options:any){
     if(options){
         const context = {
             root,
-            nodeTransforms:options.nodeTransforms || []
+            nodeTransforms:options.nodeTransforms || [],
+            helpers:new Map(),
+            helper(key:any){
+                context.helpers.set(key,1)
+            }
         }
         return context
     }
