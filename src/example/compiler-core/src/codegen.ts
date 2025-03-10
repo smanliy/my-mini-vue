@@ -1,7 +1,9 @@
+import { isString } from "../../../shared";
 import { NodeTypes } from "./ast";
-import { helperMapName, TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { CREATE_ELEMENT_VNODE, helperMapName, TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 export function generate(ast: any): any {
+
   const context = createCodegenContext();
   const { push } = context;
   const { functionName, signature } = getFunctionPreamble(ast, context);
@@ -9,6 +11,7 @@ export function generate(ast: any): any {
   push(`function ${functionName}(${signature}){`);
   push(`return `);
   genNode(ast.codegenNode, context);
+  console.log("mmmmm",ast.codegenNode); // 打印生成的代码
   push("}");
   return {
     code: context.code,
@@ -31,20 +34,63 @@ function getFunctionPreamble(ast: any, context: any) {
 }
 
 function genNode(node: any, context: any) {
-  
-  switch(node.type) {
-    case NodeTypes.TEXT:
-        genText(node, context);
-    break;
+            switch(node.type) {
+            case NodeTypes.TEXT:
+                genText(node, context);
+            break;
+        
+            case NodeTypes.INTERPOLATION:
+                genInterpolation(node,context)
+                break;
+            case NodeTypes.SIMPLE_EXPRESSION:
+                getExpression(node,context)
+                break;
+            case NodeTypes.ELEMENT:
+                genElement(node,context)
+                break;
+            case NodeTypes.COMPOUND_EXPRESSION:
+                genCompoundExpression(node,context)
+                break;
+            default:
+                break;
+          }
+    }
+    
+    
+    
 
-    case NodeTypes.INTERPOLATION:
-        genInterpolation(node,context)
-        break;
-    case NodeTypes.SIMPLE_EXPRESSION:
-        getExpression(node,context)
-        break;
-  }
+
+
+function genCompoundExpression(node:any,context:any){
+    const {push} = context 
+    const children = node.children
+for (let i = 0; i < children.length; i++) {
+    const child = children[i]
+    if( isString(children[i])){
+
+        push(child)
+    }else{
+        genNode(child,context)
+    }
+    
 }
+}
+function genElement(node: any, context: any){
+    const {push,helper} = context
+    const {tag,children} = node
+    
+    push(`${helper(CREATE_ELEMENT_VNODE)}("${tag}"),null,`)
+    for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        genNode(child,context)
+    }
+    // genNode(children,context)
+    push(")")
+
+
+}
+
+
 function getExpression(node:any,context:any){
     const {push} = context
     push(`${node.content}`)

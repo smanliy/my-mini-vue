@@ -11,19 +11,25 @@ export function transform(root:any,options:any = {}){
     root.helpers = [...context.helpers.keys()]
 }
 function createRootCodegen(root:any){
+    const child = root.children[0];
+    if(child.type === NodeTypes.ELEMENT ){
+    root.codegenNode = child.codegenNode
+}else{
     root.codegenNode = root.children[0]
+}
 }
 //深度优先遍历dom树，递归
 function traverseNode(node:any,context:any){
-    console.log(node)
-    if (!context || !context.nodeTransforms) { 
-        return;
-    }
+    
+
     const nodeTransforms = context.nodeTransforms
+    const exitFns :any  = []
     for (let i = 0; i < nodeTransforms.length; i++) {
         const transform = nodeTransforms[i];
-        transform(node)
-        
+        const onExit = transform(node,context)
+        if(onExit){
+            exitFns.push(onExit)
+        }
     }
     switch(node.type){
         case NodeTypes.INTERPOLATION:
@@ -34,8 +40,13 @@ function traverseNode(node:any,context:any){
         case NodeTypes.ELEMENT:
             traverseChildren(node,context)
             break
+        default:
+            break;
     }
-    
+    let i = exitFns.length
+    while(i--){
+        exitFns[i]()
+    }
 }
 function traverseChildren(node: any, context: any) {
     const children = node.children;
@@ -62,3 +73,4 @@ function createTransformContext(root:any,options:any){
     }
 
 }
+
