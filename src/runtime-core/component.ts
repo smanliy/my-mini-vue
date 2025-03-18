@@ -70,7 +70,11 @@ function handleSetupResult(instance: any, setupResult: any) {
 //finishComponentSetup 会被调用来完成组件的其他初始化操作（比如绑定渲染函数等）
 function finishComponentSetup(instance: any) {
   const Component = instance.type;
-
+  if(compiler && !Component.render){
+    if(Component.template){
+      Component.render = compiler(Component.template)
+    }
+  }
   if (Component.render) {
     instance.render = Component.render;
   }
@@ -84,4 +88,9 @@ export function getCurrentInstance() {
 
 export function setCurrentInstance(instance: any) {
   currentInstance = instance;
+}
+
+let compiler :any
+export function registerRuntimeCompiler(_compiler:any){
+  compiler = _compiler
 }

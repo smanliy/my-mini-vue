@@ -94,7 +94,9 @@ export function createRender(options: any) {
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
         if (typeof instance.render === "function") {
-          subTree = instance.subTree = instance.render.call(proxy);
+          // 第二个 proxy 传给 render 作为 _ctx，这样 render(_ctx) 里 _ctx.xxx 也能访问到数据。
+          // _ctx 在 Vue 3 的 render 函数中，代表的是 组件的渲染上下文，它本质上就是 组件实例的 proxy，也就是 setupState、props、data、computed 等的代理对象。
+          subTree = instance.subTree = instance.render.call(proxy,proxy);
         }
 
         // 通过 patch 函数将虚拟节点渲染到 DOM 中
@@ -116,7 +118,7 @@ export function createRender(options: any) {
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
         if (typeof instance.render === "function") {
-          subTree = instance.render.call(proxy);
+          subTree = instance.render.call(proxy.proxy);
         }
         const preSubTree = instance.subTree;
         instance.subTree = subTree;
