@@ -118,7 +118,7 @@ export function createRender(options: any) {
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
         if (typeof instance.render === "function") {
-          subTree = instance.render.call(proxy.proxy);
+          subTree = instance.render.call(proxy,proxy);
         }
         const preSubTree = instance.subTree;
         instance.subTree = subTree;

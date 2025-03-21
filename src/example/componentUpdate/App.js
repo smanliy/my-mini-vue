@@ -21,6 +21,7 @@ export const App = {
     },
 
     render() {
+        console.log('this',this.msg)
         return h("div", {}, [
             h("div", {}, "你好" + this.msg),
             h("button", {
