@@ -6,6 +6,6 @@ import { getCurrentInstance ,registerRuntimeCompiler} from "./component";
 import {provide,inject} from "./helpers/apiInject"
 import { createRender } from "./render";
 export {toDisplayString} from '../shared/toDisplayString'
-
+export {nextTick} from './scheduler'
 
 export {h,renderSlots,createTextVNode,getCurrentInstance,provide,inject,createRender,registerRuntimeCompiler,createElementVNode}

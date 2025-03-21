@@ -5,6 +5,7 @@ import { createComponentInstance, setupComponent } from "./component";
 import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppApi } from "./createApp";
 import { Text, Fragment } from "./createVNode";
+import { queneJobs } from "./scheduler";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function createRender(options: any) {
   const {
@@ -139,6 +140,11 @@ export function createRender(options: any) {
         patch(preSubTree, subTree, container, instance, anchor);
 
         // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
+      }
+    },{
+      scheduler(){
+        console.log("update-scheduler")
+        queneJobs(instance.update)
       }
     });
   }
@@ -368,11 +374,6 @@ export function createRender(options: any) {
     }
   }
 
-  function isSomeVNodeType(n1: any, n2: any) {
-    //type
-    return n1.type == n2.type && n1.key == n2.key;
-    //key
-  }
   function unmountChildren(children: any) {
     for (let i = 0; i < children.length; i++) {
       const el = children[i].el;
