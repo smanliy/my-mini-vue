@@ -96,7 +96,7 @@ export function createRender(options: any) {
         if (typeof instance.render === "function") {
           // 第二个 proxy 传给 render 作为 _ctx，这样 render(_ctx) 里 _ctx.xxx 也能访问到数据。
           // _ctx 在 Vue 3 的 render 函数中，代表的是 组件的渲染上下文，它本质上就是 组件实例的 proxy，也就是 setupState、props、data、computed 等的代理对象。
-          subTree = instance.subTree = instance.render.call(proxy,proxy);
+          subTree = instance.subTree = instance.render.call(proxy, proxy);
         }
 
         // 通过 patch 函数将虚拟节点渲染到 DOM 中
@@ -107,6 +107,7 @@ export function createRender(options: any) {
         instance.isMounted = true;
       } else {
         console.log("update");
+        //需要一个更新完成之后的虚拟节点
         const { next, vnode } = instance;
         if (next) {
           next.el = vnode.el;
@@ -118,7 +119,7 @@ export function createRender(options: any) {
         // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
         let subTree = {} as any;
         if (typeof instance.render === "function") {
-          subTree = instance.render.call(proxy,proxy);
+          subTree = instance.render.call(proxy, proxy);
         }
         const preSubTree = instance.subTree;
         instance.subTree = subTree;
@@ -129,6 +130,7 @@ export function createRender(options: any) {
       }
     });
   }
+  //更新实例对象上的props
   function updateComponentPreRender(instance: any, nextVNode: any) {
     instance.vnode = nextVNode;
     instance.next = null;
@@ -180,19 +182,27 @@ export function createRender(options: any) {
     const c2 = n2.children;
     const c1 = n1.children;
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // **新 children 是文本**
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // **旧 children 是数组（即旧 vnode 是多个子节点）**
         //1.把老的child清空
         unmountChildren(n1.children);
-        //2.添加新的text
-        if (c1 !== c2) {
-          hostSetElementText(container, c2);
-        }
       }
-    } else {
+      // 2. 更新文本内容（如果文本内容发生变化）
+      if (c1 !== c2) {
+        hostSetElementText(container, c2);
+      }
+    }
+    // **新 children 不是文本（即新的 children 是数组或空）**
+    else {
       if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // **旧 children 是文本**
         hostSetElementText(container, "");
+        // 2. 再挂载新的子节点（新的子节点是数组）
         mountChildren(c2, container, parentComponent, anchor);
       } else {
+        // **新旧 children 都是数组**
+        // 进行 **diff**，通过 `patchKeyedChildren` 对比新旧子节点并更新
         //array diff array
         patchKeyedChildren(
           n1.children,
@@ -211,15 +221,17 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
+    const l2 = c2.length;
     let i = 0;
     let e1 = c1.length - 1;
-    let e2 = c2.length - 1;
-    const l2 = c2.length;
-    // 确定需要比较的最小边界
-    let border = Math.min(e1, e2);
+    let e2 = l2 - 1;
+
+    function isSomeVNodeType(n1: any, n2: any) {
+      return n1.type === n2.type && n1.key === n2.key;
+    }
 
     // 从头开始比较两个子节点数组
-    while (i <= border) {
+    while (i <= e1 && i <= e2) {
       const n1 = c1[i];
       const n2 = c2[i];
       // 如果两个节点类型相同，则递归调用 patch 函数进行更新
