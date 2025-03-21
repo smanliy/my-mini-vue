@@ -27,6 +27,7 @@ export class ReactiveEffect{
         return result;
 
     }
+    // stop(effect) 用于手动停止 effect 的响应性，使其不再自动执行，即依赖的数据变化时，不会触发 effect 重新运行。
     stop(){
         if(this.active){
             this.cleanupEffect(this)
@@ -65,6 +66,7 @@ if(!isTracking()) return
     trackEffects(dep)
 
 }
+// 专门负责 dep 依赖管理，避免 track 代码过于复杂。
 export function trackEffects(dep:Set<ReactiveEffect> |undefined){
     if(activeEffect){
         //看dep之前有没有添加过，没有添加过就不添加了
@@ -86,6 +88,7 @@ export function trigger(target:object,key:symbol|string){
    if(!dep) return
     triggerEffects(dep)
 }
+// 专门负责 dep 触发依赖，避免 trigger 代码过于复杂。
 export function triggerEffects(dep:Set<ReactiveEffect> |undefined){
     if(dep){
         for(const effect of dep){

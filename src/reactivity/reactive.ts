@@ -17,6 +17,7 @@ export function readonly<T extends object>(raw:T):T{
 }
 //创建proxy对象
 function createProxyObject<T extends object>(raw:T,handlers:ProxyHandler<T>):T{
+  //加一层是不是对象的判断，防止传入基本类型
   if(!isObject(raw)){
     console.warn(`target ${raw} is not a object`)
     return raw

@@ -2,6 +2,8 @@ import { ReactiveEffect, trackEffects, triggerEffects } from "./effect";
 import { hasChanged, isObject } from "../shared/index";
 import { isTracking } from "./effect";
 import { reactive } from "./reactive";
+// ref 不是直接用 Proxy 实现的，而是使用了类（class），通过getter 拦截访问，并在 .value 访问时触发响应式行为。
+// ref 的核心思想是，通过一个类来封装原始值，并在访问这个值时触发响应式行为。
 class RefIml{
     private _value:any;
     public dep:Set<ReactiveEffect>
