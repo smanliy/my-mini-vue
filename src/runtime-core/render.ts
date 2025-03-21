@@ -2,6 +2,7 @@ import { effect } from "../reactivity/effect";
 import { EMPTY_OBJ } from "../shared";
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
+import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppApi } from "./createApp";
 import { Text, Fragment } from "./createVNode";
 // render 函数用于渲染虚拟节点到指定的容器中
@@ -60,9 +61,20 @@ export function createRender(options: any) {
   }
   function updateComponent(n1: any, n2: any) {
     const instance = (n2.component = n1.component);
-    instance.next = n2;
-    instance.update();
+    
+  // 判断是否需要更新组件
+    if (shouldUpdateComponent(n1, n2)) {
+      instance.next = n2;
+      instance.update();
+    } else {
+      // **组件不需要更新**
+      // 直接复用旧的 `el`
+      n2.el = n1.el;
+       // 更新组件实例的 vnode，保证 next 不是 undefined
+      instance.vnode = n2;
+    }
   }
+
   // mountComponent 函数用于挂载组件
   function mountComponent(
     initialVNode: any,
