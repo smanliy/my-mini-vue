@@ -7,7 +7,7 @@ export const App = {
         window.self = this
         //返回虚拟节点
         const app = h("div", {}, "App")
-
+        //具名插槽
         const foo = h(Foo, {},
             {
                 header: ({age})=>[h("p", {}, "header" + age),createTextVNode("你好呀")],

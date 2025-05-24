@@ -15,7 +15,7 @@ export function createRender(options: any) {
     remove: hostRemove,
     setElement: hostSetElementText,
   } = options;
-
+  // 生成一个虚拟 DOM（subTree）。此时，render 函数的上下文是 proxy，即组件的代理对象，包含了组件的所有响应式数据和方法。
   function render(n2: any, container: any, anchor: any) {
     patch(null, n2, container, null, null);
   }
@@ -62,8 +62,8 @@ export function createRender(options: any) {
   }
   function updateComponent(n1: any, n2: any) {
     const instance = (n2.component = n1.component);
-    
-  // 判断是否需要更新组件
+
+    // 判断是否需要更新组件
     if (shouldUpdateComponent(n1, n2)) {
       instance.next = n2;
       instance.update();
@@ -71,7 +71,7 @@ export function createRender(options: any) {
       // **组件不需要更新**
       // 直接复用旧的 `el`
       n2.el = n1.el;
-       // 更新组件实例的 vnode，保证 next 不是 undefined
+      // 更新组件实例的 vnode，保证 next 不是 undefined
       instance.vnode = n2;
     }
   }
@@ -101,52 +101,62 @@ export function createRender(options: any) {
     container: any,
     anchor: any
   ) {
-    instance.update = effect(() => {
-      if (!instance.isMounted) {
-        const { proxy } = instance;
-        // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
-        let subTree = {} as any;
-        if (typeof instance.render === "function") {
-          // 第二个 proxy 传给 render 作为 _ctx，这样 render(_ctx) 里 _ctx.xxx 也能访问到数据。
-          // _ctx 在 Vue 3 的 render 函数中，代表的是 组件的渲染上下文，它本质上就是 组件实例的 proxy，也就是 setupState、props、data、computed 等的代理对象。
-          subTree = instance.subTree = instance.render.call(proxy, proxy);
+    instance.update = effect(
+      () => {
+        //首次渲染
+        if (!instance.isMounted) {
+          const { proxy } = instance;
+          // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
+          let subTree = {} as any;
+          if (typeof instance.render === "function") {
+            //调用render函数
+
+            // 第一个 proxy 传给 render 作为 _ctx，这样 render(_ctx) 里 _ctx.xxx 也能访问到数据。
+            // 第二个 proxy 传给 render 作为 _ctx，这样 render(_ctx) 里 _ctx.xxx 也能访问到数据。
+            // _ctx 在 Vue 3 的 render 函数中，代表的是 组件的渲染上下文，它本质上就是 组件实例的 proxy，也就是 setupState、props、data、computed 等的代理对象。
+            subTree = instance.subTree = instance.render.call(proxy, proxy);
+          }
+
+          // 通过 patch 函数将虚拟节点渲染到 DOM 中
+          patch(null, subTree, container, instance, anchor);
+
+          // 记录子树元素（el）：将渲染后的 DOM 元素与虚拟节点绑定，这样后续更新时可以比较虚拟节点与真实 DOM 的对应关系。
+          n2.el = subTree.el;
+          instance.isMounted = true;
         }
+        //更新渲染
+        else {
+          console.log("update");
+          //需要一个更新完成之后的虚拟节点
+          const { next, vnode } = instance;
+          if (next) {
+            // next.el = vnode.el; 保留旧 vnode 对应的 el，确保新旧 vnode 之间的对比能够顺利进行。
+            next.el = vnode.el;
+            updateComponentPreRender(instance, next);
+          } 
 
-        // 通过 patch 函数将虚拟节点渲染到 DOM 中
-        patch(null, subTree, container, instance, anchor);
+          const { proxy } = instance;
+          // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
+          let subTree = {} as any;
+          // 重新调用 render 函数，生成新的虚拟 DOM
+          if (typeof instance.render === "function") {
+            subTree = instance.render.call(proxy, proxy);
+          }
+          const preSubTree = instance.subTree;
+          instance.subTree = subTree;
+          // 记录更新前的虚拟 DOM，后续 patch 需要基于它进行 Diff 算法计算。
+          patch(preSubTree, subTree, container, instance, anchor);
 
-        // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
-        n2.el = subTree.el;
-        instance.isMounted = true;
-      } else {
-        console.log("update");
-        //需要一个更新完成之后的虚拟节点
-        const { next, vnode } = instance;
-        if (next) {
-          next.el = vnode.el;
-          updateComponentPreRender(instance, next);
-        } else {
+          // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
         }
-
-        const { proxy } = instance;
-        // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
-        let subTree = {} as any;
-        if (typeof instance.render === "function") {
-          subTree = instance.render.call(proxy, proxy);
-        }
-        const preSubTree = instance.subTree;
-        instance.subTree = subTree;
-        // 通过 patch 函数将虚拟节点渲染到 DOM 中
-        patch(preSubTree, subTree, container, instance, anchor);
-
-        // 将 vnode 与渲染后的 DOM 元素绑定，方便后续更新
+      },
+      {
+        scheduler() {
+          console.log("update-scheduler");
+          queneJobs(instance.update);
+        },
       }
-    },{
-      scheduler(){
-        console.log("update-scheduler")
-        queneJobs(instance.update)
-      }
-    });
+    );
   }
   //更新实例对象上的props
   function updateComponentPreRender(instance: any, nextVNode: any) {
@@ -295,13 +305,16 @@ export function createRender(options: any) {
       //中间对比
       let s1 = i;
       let s2 = i;
-      //当所有的新节点已经比对完时，旧节点还有剩余（和新节点比对有差异的部分有剩余），需要删除
+      //需要比对的节点数量
       const toBePatched = e2 - s2 + 1;
+      // 记录已经处理的节点数
       let hasPatched = 0;
       let moved = false;
+      // 记录最大的新节点索引
       let maxNewIndexSofar = 0;
+      // key 到索引的映射
       const keyToIndexMap = new Map();
-
+      // 初始化映射数组
       const newIndexToOldIndexMap = new Array(toBePatched).fill(0); //初始化数组
 
       //建立映射表
@@ -313,6 +326,7 @@ export function createRender(options: any) {
 
       for (let i = s1; i <= e1; i++) {
         const prevChild = c1[i];
+        // 说明所有新节点都已经处理完毕，剩下的旧节点可以直接移除。
         if (hasPatched >= toBePatched) {
           hostRemove(prevChild.el);
           continue;
@@ -335,6 +349,7 @@ export function createRender(options: any) {
           hostRemove(prevChild.el);
         } else {
           //判断是否移动
+          // 新节点的索引总是递增的，则说明这些节点已经在正确的位置，无需移动。
           if (newIndex >= maxNewIndexSofar) {
             maxNewIndexSofar = newIndex;
           } else {
@@ -349,6 +364,8 @@ export function createRender(options: any) {
         }
       }
 
+        // 最长递增子序列（LIS, Longest Increasing Subsequence）**来减少不必要的 DOM 操作，从而提高性能
+        // 最长递增子序列的作用是找到一组已经在正确位置的节点（即不需要移动的节点）。通过找到这些节点，我们可以避免对它们进行不必要的 DOM 移动操作，从而提高性能。
       const increasingNewIndexSequence = moved
         ? getSequence(newIndexToOldIndexMap)
         : [];
@@ -358,13 +375,18 @@ export function createRender(options: any) {
         const nextIndex = i + s2;
         const nextChild = c2[nextIndex];
 
+        // 计算锚点（anchor）来决定 DOM 操作的插入位置
         //锚点等于当前节点的下一个
+        // 插入操作会将节点放置在锚点之前。如果锚点为 null，则节点会被插入到容器的最后。
         const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null;
+        // 前新节点在旧节点列表中不存在，属于新增节点。
         if (newIndexToOldIndexMap[i] === 0) {
           patch(null, nextChild, container, parentComponent, anchor);
         } else if (moved) {
+          // 如果当前索引 i 不在最长递增子序列中，说明该节点需要移动。
           if (i != increasingNewIndexSequence[j]) {
             console.log("移动位置");
+            // 调用 hostInsert 将节点插入到正确的位置
             hostInsert(nextChild.el, container, anchor);
           } else {
             j--;

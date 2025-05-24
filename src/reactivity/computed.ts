@@ -7,10 +7,9 @@ class ComputedImpl<T>{
     private _effect :ReactiveEffect
     constructor(getter:()=>T){
         this._getter = getter;
+        
+        // 当 getter 中访问的依赖项（如某个 reactive 或 ref）发生变化时，ReactiveEffect 会执行其第二个参数（scheduler 函数）。
         this._effect = new ReactiveEffect(this._getter,()=>{
-            // dirty 用于标记计算属性（computed）是否需要重新计算，如果依赖的响应式对象发生改变，dirty 变为 true，表示需要重新计算。
-            // 依赖变更时，标记 dirty 需要重新计算
-            // this._dirty = true 会在下一次 getter 执行之前设置，标记计算属性值已经过期，需要重新计算。
             this._dirty = true
         })
     }

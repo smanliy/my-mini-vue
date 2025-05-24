@@ -53,10 +53,12 @@ function parseChildren(context: any,ancestors:any) {
   // 返回解析出的子节点
   return nodes;
 }
+//用于判断是否结束了当前模板的解析，它根据两个条件来决定是否停止解析：
 function isEnd(context:any,ancestors:any){
     //1.source有值的时候
     //2.当遇到结束标签的时候
     let s = context.source
+    // 判断是否已经遇到了一个结束标签，并且判断当前标签是否与祖先标签匹配。
     if( s.startsWith("</")){
         for(let i = ancestors.length - 1;i >= 0;i--){
             const tag =ancestors[i].tag
@@ -65,9 +67,10 @@ function isEnd(context:any,ancestors:any){
             }
         }
     }
-
+    // 如果 context.source 已经为空，表示没有更多的内容了，因此应该结束解析，返回 true
     return !context.source
 }
+//解析元素节点
 function parseElement(context:any,ancestors:any){
     //解析tag
     const element :any =  parseTag(context,TagType.Start)
@@ -81,6 +84,7 @@ function parseElement(context:any,ancestors:any){
     }
     return element
 }
+//解析纯文本
 function parseText(context:any){
     let endIndex = context.source.length
     let endTokens = ["<","{{"]
@@ -96,9 +100,6 @@ function parseText(context:any){
     //1.获取context.2.text
     const content = parseTextData(context,endIndex);
 
-
-
-
     return{
         type:NodeTypes.TEXT,
         content:content,
@@ -112,6 +113,7 @@ function parseTextData(context:any,length:number) {
     advanceBy(context, length);
     return content;
 }
+//提取标签名
 function parseTag(context:any,type:TagType){
     const match = /^<\/?([a-z]*)/i.exec(context.source)
     let tag;
@@ -133,7 +135,7 @@ function parseTag(context:any,type:TagType){
  */
 function createParserContext(content: string) {
   return {
-    source: content,
+    source: content,//当前还未处理的字符串模版,维护解析进度，即字符串指针
   };
 }
 
