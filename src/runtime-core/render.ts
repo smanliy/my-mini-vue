@@ -16,7 +16,7 @@ export function createRender(options: any) {
     setElement: hostSetElementText,
   } = options;
   // 生成一个虚拟 DOM（subTree）。此时，render 函数的上下文是 proxy，即组件的代理对象，包含了组件的所有响应式数据和方法。
-  function render(n2: any, container: any, anchor: any) {
+  function render(n2: any, container: any) {
     patch(null, n2, container, null, null);
   }
   //  函数用于比较新旧虚拟节点，并根据差异进行最小化的 DOM 更新。它接受四个参数：n1 表示旧的虚拟节点，n2 表示新的虚拟节点，container 表示要渲染的容器，parentComponent 表示父组件。
@@ -27,6 +27,18 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
+    const shouldRender = !n2.props || n2.props['v-if'] == true 
+    //调试部分
+    // console.log('n2',n2)
+    // console.log('before patch n2.props:', n2.props);
+    // console.log('n2.props',n2.props)
+    // console.log('after patch n2.props:', n2.props);
+    // console.log('v-if',n2.props ? n2.props['v-if'] : undefined)
+    if(n2.props && Object.keys(n2.props).length != 0 && !shouldRender){
+      return 
+    }
+
+
     // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
     const { type, shapeFlag } = n2;
     switch (type) {
