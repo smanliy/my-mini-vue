@@ -5,6 +5,7 @@ import { createComponentInstance, setupComponent } from "./component";
 import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppApi } from "./createApp";
 import { Text, Fragment } from "./createVNode";
+import { h } from "./h";
 import { queneJobs } from "./scheduler";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function createRender(options: any) {
@@ -27,18 +28,37 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
-    const shouldRender = !n2.props || n2.props['v-if'] == true 
-    //调试部分
-    // console.log('n2',n2)
-    // console.log('before patch n2.props:', n2.props);
-    // console.log('n2.props',n2.props)
-    // console.log('after patch n2.props:', n2.props);
-    // console.log('v-if',n2.props ? n2.props['v-if'] : undefined)
-    if(n2.props && Object.keys(n2.props).length != 0 && !shouldRender){
-      return 
+    //处理v-for
+    if (n2.props && n2.props["v-for"]) {
+      const { item, index, list } = parseVFor(n2.props["v-for"]);
+      const listVal = parentComponent.proxy[list];
+      const childNodes = [];
+      for (let i = 0; i < listVal.length; i++) {
+        const child = n2.children({ [item]: listVal[i], [index]: i });
+        const vnode = {
+          type: n2.type,
+          props: {},
+          children: child,
+          shapeFlag:
+            ShapeFlags.ELEMENT | // 标记为元素节点 [!code ++]
+            (typeof child === "string"
+              ? ShapeFlags.TEXT_CHILDREN // 文本子节点
+              : ShapeFlags.ARRAY_CHILDREN), // 数组子节点
+        };
+
+        childNodes.push(vnode);
+      }
+      n2.children = childNodes;
+      n2.shapeFlag = n2.shapeFlag | ShapeFlags.ARRAY_CHILDREN;
+      // mountChildren(childNodes, container, parentComponent, anchor);
     }
-
-
+    //处理v-if
+    if (n2.props && "v-if" in n2.props) {
+      const shouldRender = n2.props["v-if"];
+      if (!shouldRender) {
+        return;
+      }
+    }
     // 判断 vnode 是否是一个元素节点，如果是，则处理元素节点
     const { type, shapeFlag } = n2;
     switch (type) {
@@ -145,7 +165,7 @@ export function createRender(options: any) {
             // next.el = vnode.el; 保留旧 vnode 对应的 el，确保新旧 vnode 之间的对比能够顺利进行。
             next.el = vnode.el;
             updateComponentPreRender(instance, next);
-          } 
+          }
 
           const { proxy } = instance;
           // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
@@ -376,8 +396,8 @@ export function createRender(options: any) {
         }
       }
 
-        // 最长递增子序列（LIS, Longest Increasing Subsequence）**来减少不必要的 DOM 操作，从而提高性能
-        // 最长递增子序列的作用是找到一组已经在正确位置的节点（即不需要移动的节点）。通过找到这些节点，我们可以避免对它们进行不必要的 DOM 移动操作，从而提高性能。
+      // 最长递增子序列（LIS, Longest Increasing Subsequence）**来减少不必要的 DOM 操作，从而提高性能
+      // 最长递增子序列的作用是找到一组已经在正确位置的节点（即不需要移动的节点）。通过找到这些节点，我们可以避免对它们进行不必要的 DOM 移动操作，从而提高性能。
       const increasingNewIndexSequence = moved
         ? getSequence(newIndexToOldIndexMap)
         : [];
@@ -496,6 +516,26 @@ export function createRender(options: any) {
     container.append(testNode);
   }
   return { createApp: createAppApi(render) };
+}
+
+function parseVFor(exp: any) {
+  const [left, right] = exp.split(" in ");
+  const list = right.trim();
+  let item = null;
+  let index = null;
+  //处理left
+  if (left.includes("(")) {
+    const result = left.replace(/[()\s]/g, "").split(",");
+    item = result[0];
+    index = result[1];
+  } else {
+    item = left.trim();
+  }
+  return {
+    item,
+    index,
+    list,
+  };
 }
 function getSequence(arr: any) {
   if (arr.length === 0) return [];

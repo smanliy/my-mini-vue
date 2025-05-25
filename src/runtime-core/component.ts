@@ -11,7 +11,7 @@ export function createComponentInstance(vnode: any,parent:any) {
   const component = {
     vnode, //虚拟节点
     type: vnode.type, //组件类型
-    setupState: {}, //组件的状态
+    setupState: {}, //组件的状态，setup() 里 return 出来的变量
     slots: {},
     next:null,
     props: {},
