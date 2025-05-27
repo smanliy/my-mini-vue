@@ -16,7 +16,7 @@ class RefIml{
     }
     get value(){
        
-        tarckRefValue(this)
+        trackRefValue(this)
        
         return this._value
     }
@@ -32,7 +32,7 @@ export function ref(raw:any):RefIml{
     return new RefIml(raw)
 }
 //收集ref相关的依赖
-function tarckRefValue(target:RefIml){
+function trackRefValue(target:RefIml){
     if(isTracking())
         {
             trackEffects(target.dep)

@@ -28,6 +28,11 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
+
+    if (n1 && n2) {
+    // 更新阶段
+    n2.el = n1.el;  // **关键：让新 vnode 复用旧 vnode 的 el**
+  }
     //处理v-for
     if (n2.props && n2.props["v-for"]) {
       const { item, index, list } = parseVFor(n2.props["v-for"]);
@@ -154,6 +159,7 @@ export function createRender(options: any) {
 
           // 记录子树元素（el）：将渲染后的 DOM 元素与虚拟节点绑定，这样后续更新时可以比较虚拟节点与真实 DOM 的对应关系。
           n2.el = subTree.el;
+          instance.vnode.el = subTree.el;  // 这里给组件 vnode 也赋值 el，方便后续复用
           instance.isMounted = true;
         }
         //更新渲染

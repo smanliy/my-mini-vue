@@ -35,7 +35,7 @@ function queueFlush() {
     isFlushPending = true
      // 使用 nextTick（基于 Promise 微任务），确保 FlushJobs 在下一个微任务阶段执行
     nextTick(FlushJobs)
-
+    isFlushPending = false
   }
 
 }
