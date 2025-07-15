@@ -109,7 +109,7 @@ export function effect<T extends Function>(fn:T,options:any = {}){
     //extend
     extend(_effect,options)
     //fn
-    _effect.run();
+    _effect.run();//执行fn
     const runner :any= _effect.run.bind(_effect)
     runner.effect = _effect
     return runner

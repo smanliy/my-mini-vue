@@ -1,10 +1,10 @@
 import { createRender } from '../runtime-core'
 
-function createElement(type:any){
+export function createElement(type:any){
     return document.createElement(type)
 }
 
-function pathProp(el:any,key:any,preVal:any,nextVal:any){
+export function pathProp(el:any,key:any,preVal:any,nextVal:any){
         const isOn = (key:any) => /^on[A-Z]/.test(key)
 
     if(isOn(key)){
@@ -21,11 +21,10 @@ function pathProp(el:any,key:any,preVal:any,nextVal:any){
 }
 
 
-function insert(el:any,container:any,anchor:any){
-    // container.append(el)
+export function insert(el:any,container:any,anchor:any){
     container.insertBefore(el,anchor)
 }
-function setElement(el:any,text:any){
+export function setElement(el:any,text:any){
     el.textContent = text
 }
 const render:any = createRender({
@@ -40,7 +39,7 @@ export function createApp(...args:any){
     return render.createApp(...args)
 }
 
-function remove(child:any){
+export function remove(child:any){
     const parent = child.parentNode;
     if(parent){
         parent.removeChild(child)

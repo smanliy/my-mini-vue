@@ -9,6 +9,7 @@ class ComputedImpl<T>{
         this._getter = getter;
         
         // 当 getter 中访问的依赖项（如某个 reactive 或 ref）发生变化时，ReactiveEffect 会执行其第二个参数（scheduler 函数）。
+        // effect 的第二个参数中的 scheduler 确实可以控制第一个参数（即副作用函数）的执行时机，并且可以在这里做一些额外操作，比如设置变量、批量调度、任务排队
         this._effect = new ReactiveEffect(this._getter,()=>{
             this._dirty = true
         })

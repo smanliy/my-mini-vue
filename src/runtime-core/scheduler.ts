@@ -36,7 +36,7 @@ function queueFlush() {
      // 使用 nextTick（基于 Promise 微任务），确保 FlushJobs 在下一个微任务阶段执行
   nextTick(() => {
     FlushJobs(); // 执行队列任务
-    isFlushPending = false; // ✅ 任务完成后重置状态
+    isFlushPending = false; //  任务完成后重置状态
   });
   }
 

@@ -6,6 +6,7 @@ import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppApi } from "./createApp";
 import { Text, Fragment } from "./createVNode";
 import { h } from "./h";
+import { KeepAlive } from "./keepalive";
 import { queneJobs } from "./scheduler";
 // render 函数用于渲染虚拟节点到指定的容器中
 export function createRender(options: any) {
@@ -28,11 +29,10 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
-
     if (n1 && n2) {
-    // 更新阶段
-    n2.el = n1.el;  // **关键：让新 vnode 复用旧 vnode 的 el**
-  }
+      // 更新阶段
+      n2.el = n1.el; // 关键：让新 vnode 复用旧 vnode 的 el
+    }
     //处理v-for
     if (n2.props && n2.props["v-for"]) {
       const { item, index, list } = parseVFor(n2.props["v-for"]);
@@ -74,29 +74,49 @@ export function createRender(options: any) {
         processText(n1, n2, container);
         break;
       default:
+        // console.log('patch 执行时 shapeFlag:', shapeFlag, 'type:', type?.name || type);
         if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(n1, n2, container, parentComponent, anchor);
         } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-          // 如果 vnode 是一个对象，则处理组件
+          // //keepalive组件
+          // const isKeepAlive = typeof n2.type === 'object' && n2.type.__isKeepAlive;
+          // if(isKeepAlive){
+          //   processKeepAliveComponent(n1, n2, container, parentComponent, anchor)
+          // }else{
+          // //其他组件
+          // processComponent(n1, n2, container, parentComponent, anchor);
+          // }
           processComponent(n1, n2, container, parentComponent, anchor);
         }
         break;
     }
   }
+  KeepAlive.__injectPatch__(patch);
+
+
   // processComponent 函数用于处理组件节点
-  function processComponent(
-    n1: any,
-    n2: any,
-    container: any,
-    parentComponent: any,
-    anchor: any
-  ) {
-    if (!n1) {
-      mountComponent(n2, container, parentComponent, anchor);
-    } else {
-      updateComponent(n1, n2);
+  function processComponent(n1:any, n2:any, container:any, parentComponent:any, anchor:any) {
+  if (!n1 || n1.type !== n2.type) {
+    if(n1){
+      console.log("看我_____________",n1.KeepAliveInstance.deactivate)
     }
+    
+    if (n1 && n1.KeepAliveInstance.deactivate) {
+      n1.KeepAliveInstance.deactivate(n1);
+      console.log("HEY,我执行了_____________________")
+    }
+    mountComponent(n2, container, parentComponent, anchor);
+  } else if (!shouldUpdateComponent(n1, n2)) {
+    n2.el = n1.el;
+    n2.component = n1.component;
+    return;
+  } else {
+    updateComponent(n1, n2);
   }
+}
+
+
+  
   function updateComponent(n1: any, n2: any) {
     const instance = (n2.component = n1.component);
 
@@ -141,6 +161,7 @@ export function createRender(options: any) {
     instance.update = effect(
       () => {
         //首次渲染
+        console.log("正在执行 render 的组件是:", instance.type?.name);
         if (!instance.isMounted) {
           const { proxy } = instance;
           // 调用 render 函数生成子树（subTree），子树是一个虚拟节点
@@ -159,7 +180,7 @@ export function createRender(options: any) {
 
           // 记录子树元素（el）：将渲染后的 DOM 元素与虚拟节点绑定，这样后续更新时可以比较虚拟节点与真实 DOM 的对应关系。
           n2.el = subTree.el;
-          instance.vnode.el = subTree.el;  // 这里给组件 vnode 也赋值 el，方便后续复用
+          instance.vnode.el = subTree.el; // 这里给组件 vnode 也赋值 el，方便后续复用
           instance.isMounted = true;
         }
         //更新渲染
@@ -190,7 +211,7 @@ export function createRender(options: any) {
       },
       {
         scheduler() {
-          console.log("update-scheduler");
+          // console.log("update-scheduler");
           queneJobs(instance.update);
         },
       }
@@ -224,7 +245,7 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
-    console.log("patchele", n1, n2);
+    // console.log("patchele", n1, n2);
     const oldProps = n1.props || EMPTY_OBJ;
 
     const newProps = n2.props || EMPTY_OBJ;
@@ -243,6 +264,16 @@ export function createRender(options: any) {
     parentComponent: any,
     anchor: any
   ) {
+    // console.log(
+    //   "patchChildren n1 shapeFlag, children:",
+    //   n1.shapeFlag,
+    //   n1.children
+    // );
+    // console.log(
+    //   "patchChildren n2 shapeFlag, children:",
+    //   n2.shapeFlag,
+    //   n2.children
+    // );
     const prevShapeFlag = n1.shapeFlag;
     const { shapeFlag } = n2;
     const c2 = n2.children;
@@ -271,8 +302,8 @@ export function createRender(options: any) {
         // 进行 **diff**，通过 `patchKeyedChildren` 对比新旧子节点并更新
         //array diff array
         patchKeyedChildren(
-          n1.children,
-          n2.children,
+          Array.isArray(c1) ? c1 : [],
+          Array.isArray(c2) ? c2 : [],
           container,
           parentComponent,
           anchor
@@ -521,7 +552,12 @@ export function createRender(options: any) {
 
     container.append(testNode);
   }
-  return { createApp: createAppApi(render) };
+  return {
+    createApp: createAppApi(render),
+    _internal: {
+      getPatch: () => patch,
+    },
+  };
 }
 
 function parseVFor(exp: any) {

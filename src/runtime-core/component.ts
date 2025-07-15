@@ -7,7 +7,7 @@ import { initSlots } from "./componentSlots";
 // component.ts 文件主要负责创建和设置组件实例
 //根据虚拟节点创建组件实例
 export function createComponentInstance(vnode: any,parent:any) {
-    console.log("createComponentInstance",parent)
+  console.log("createComponentInstance",parent)
   const component = {
     vnode, //虚拟节点
     type: vnode.type, //组件类型
@@ -36,6 +36,7 @@ export function setupComponent(instance: any) {
 
   //设置有状态组件的状态
   setupStatefulComponent(instance);
+  console.log("🧪 setupState =", instance.setupState); // 这里应该包含 message
 }
 
 function setupStatefulComponent(instance: any) {
@@ -63,6 +64,9 @@ function handleSetupResult(instance: any, setupResult: any) {
   // setup 返回的是一个对象，包含了组件的响应式状态、计算属性和方法等。Vue 会将这个对象赋值给组件实例的 setupState 属性，从而使得这些状态、计算属性等可以通过组件实例访问。
   if (typeof setupResult === "object") {
     instance.setupState = proxyRefs(setupResult);
+  }else if(typeof setupResult === 'function'){
+    console.log("setup的返回值是个函数")
+    instance.render = setupResult;
   }
   //保证组件的render一定是有值的
   finishComponentSetup(instance);
