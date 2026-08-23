@@ -97,15 +97,26 @@ export function createRender(options: any) {
   // processComponent 函数用于处理组件节点
   function processComponent(n1:any, n2:any, container:any, parentComponent:any, anchor:any) {
   if (!n1 || n1.type !== n2.type) {
-    if(n1){
-      console.log("看我_____________",n1.KeepAliveInstance.deactivate)
-    }
+    // if(n1){
+    //   console.log("看我_____________",n1.KeepAliveInstance.deactivate)
+    // }
     
-    if (n1 && n1.KeepAliveInstance.deactivate) {
+    if (n1 && n1.KeepAliveInstance && n1.KeepAliveInstance.deactivate) {
       n1.KeepAliveInstance.deactivate(n1);
-      console.log("HEY,我执行了_____________________")
+      // console.log("HEY,我执行了_____________________")
     }
-    mountComponent(n2, container, parentComponent, anchor);
+
+    // 关键修复：如果 n2 是已经有组件实例的 KeepAlive 缓存组件，
+    // 调用 activate 恢复显示（保留状态），而不是 mountComponent（会丢失状态）
+    const isCachedKeepAlive =
+      n2.KeepAliveInstance &&
+      n2.KeepAliveInstance.activate &&
+      n2.component; // 已经挂载过的实例
+    if (isCachedKeepAlive) {
+      n2.KeepAliveInstance.activate(n2, container, anchor);
+    } else {
+      mountComponent(n2, container, parentComponent, anchor);
+    }
   } else if (!shouldUpdateComponent(n1, n2)) {
     n2.el = n1.el;
     n2.component = n1.component;
